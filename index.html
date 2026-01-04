@@ -220,7 +220,7 @@ Standardized Labels</h1>
                     // Esempio: Imag2Emo, PRIVATE, valence -> rate_valence_privata
                     // Esempio: Imag2Emo, PUBLIC, valence -> valence_pubblico
                     const suffix = labelType === 'PRIVATE' ? 'privata' : 'pubblico';
-                    const prefix = (labelType === 'PRIVATE' && dimension !== 'hns') ? 'rate_' : '';
+                    const prefix = (labelType === 'PRIVATE' && dimension === 'valence') ? 'rate_' : '';
                     return `${prefix}${dimension}_${suffix}`;
                 }
             }
