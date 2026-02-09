@@ -132,6 +132,7 @@ Standardized Labels</h1>
                         <label for="dataset-select" class="block text-sm font-medium text-slate-600 mb-1">Dataset</label>
                         <select id="dataset-select">
                             <option value="DEAP">DEAP</option>
+                            <option value="DEAP_BDF">DEAP (BDF)</option>
                             <option value="Imag2Emo">Imag2Emo (GRAZ)</option>
                         </select>
                     </div>
@@ -207,6 +208,13 @@ Standardized Labels</h1>
         function getDimensionFolder(dataset, dimension, labelType) {
             // Logica per costruire i nomi delle cartelle in base alle selezioni.
             // Deve corrispondere esattamente alla struttura delle cartelle dei risultati.
+            if (dataset === 'DEAP_BDF') {
+                if (labelType === 'PRIVATE') {
+                    return dimension;
+                } else {
+                    return `${dimension}_pubblica`;
+                }
+            }
             if (dataset === 'DEAP') {
                 // Esempio: DEAP, PRIVATE, arousal -> arousal_privata
                 const suffix = labelType === 'PRIVATE' ? 'privata' : 'pubblica';
@@ -296,10 +304,13 @@ Standardized Labels</h1>
             const dimension = dimensionSelect.value;
             const validation = validationSelect.value;
             const model = modelSelect.value;
-            const datasetFolder = dataset === 'Imag2Emo' ? 'GRAZ' : 'DEAP';
+            
+            let datasetFolder = dataset;
+            if (dataset === 'Imag2Emo') datasetFolder = 'GRAZ';
             
             const dimensionFolder = getDimensionFolder(dataset, dimension, labelType);
-            const basePath = `${datasetFolder}/${labelType}/${dimensionFolder}/${validation}/${model}/scaling_ON`;
+            const scalingSuffix = (dataset === 'DEAP_BDF') ? 'scaling_OFF' : 'scaling_ON';
+            const basePath = `${datasetFolder}/${labelType}/${dimensionFolder}/${validation}/${model}/${scalingSuffix}`;
 
             // URL diretti ai file, senza PHP
             const imageUrl = `results/${basePath}/avg_curves.png`;
@@ -335,7 +346,7 @@ Standardized Labels</h1>
         }
 
         function handleDatasetChange() {
-            if (datasetSelect.value === 'DEAP') {
+            if (datasetSelect.value === 'DEAP' || datasetSelect.value === 'DEAP_BDF') {
                 hnsOption.hidden = true;
                 if (dimensionSelect.value === 'hns') {
                     dimensionSelect.value = 'valence';
