@@ -44,7 +44,7 @@
             </div>
             <div class="hidden md:flex space-x-8">
                 <a href="#home" class="nav-link">Home</a>
-                <a href="#dashboard" class="nav-link">Dashboard</a>
+                <a href="#dashboard" class="nav-link">Deep Learning Architectures</a>
                 <a href="#interactive-dashboard" class="nav-link">Interactive Dashboard</a>
             </div>
             <button id="mobile-menu-button" class="md:hidden text-slate-800 focus:outline-none">
@@ -120,6 +120,17 @@ Standardized Labels</h1>
                     </ul>
                 </div>
 
+                <!-- Datasets -->
+                <div class="card md:col-span-2">
+                    <h3 class="text-xl font-semibold text-slate-800 mb-4">Datasets</h3>
+                    <p class="text-slate-600 mb-4">We tested the DL Architectures on the following datasets:</p>
+                    <ul class="list-disc list-inside space-y-2 text-slate-600">
+                        <li><span class="font-semibold">DEAP_R</span> A raw version of the DEAP dataset</li>
+                        <li><span class="font-semibold">DEAP_P</span> A preprocessed version of the DEAP dataset</li>
+                        <li><span class="font-semibold">Imag2Emo</span> The new dataset acquired at the Institute of Neural Engineering, Graz University of Technology</li>
+                    </ul>
+                </div>
+
             </div>
         </section>
         
@@ -131,9 +142,9 @@ Standardized Labels</h1>
                     <div>
                         <label for="dataset-select" class="block text-sm font-medium text-slate-600 mb-1">Dataset</label>
                         <select id="dataset-select">
-                            <option value="DEAP">DEAP</option>
-                            <option value="DEAP_BDF">DEAP (BDF)</option>
-                            <option value="Imag2Emo">Imag2Emo (GRAZ)</option>
+                            <option value="DEAP">DEAP_R</option>
+                            <option value="DEAP_BDF">DEAP_P</option>
+                            <option value="Imag2Emo">Imag2Emo</option>
                         </select>
                     </div>
                     <div>
