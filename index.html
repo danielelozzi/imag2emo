@@ -32,6 +32,12 @@
         .interactive-dashboard select:disabled {
             @apply bg-slate-200 text-slate-400 cursor-not-allowed;
         }
+        .pipeline-node {
+            transition: all 0.2s ease-in-out;
+        }
+        .pipeline-node:hover {
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.08));
+        }
     </style>
 </head>
 <body class="text-slate-700">
@@ -87,23 +93,145 @@ Standardized Labels</h1>
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <!-- Methodology & Code Section -->
                 <div class="card md:col-span-2">
-                    <h3 class="text-xl font-semibold text-slate-800 mb-4">EEG Data Preprocessing Pipeline</h3>
-                    <div class="flex flex-wrap items-center justify-center text-center gap-1.5">
-                        <div class="px-2 py-1 bg-slate-100 rounded-md text-sm">Signal Acquisition</div>
-                        <div class="text-slate-400 font-bold text-xl">&rarr;</div>
-                        <div class="px-2 py-1 bg-slate-100 rounded-md text-sm">1-100 Hz Filtering</div>
-                        <div class="text-slate-400 font-bold text-xl">&rarr;</div>
-                        <div class="px-2 py-1 bg-slate-100 rounded-md text-sm">PREP Pipeline</div>
-                        <div class="text-slate-400 font-bold text-xl">&rarr;</div>
-                        <div class="px-2 py-1 bg-slate-100 rounded-md text-sm">ICA (Extended Infomax)</div>
-                        <div class="text-slate-400 font-bold text-xl">&rarr;</div>
-                        <div class="px-2 py-1 bg-slate-100 rounded-md text-sm">Remove Artifacts (ICLabel)</div>
-                         <div class="text-slate-400 font-bold text-xl">&rarr;</div>
-                        <div class="px-2 py-1 bg-slate-100 rounded-md text-sm">4-64 Hz Filtering</div>
-                         <div class="text-slate-400 font-bold text-xl">&rarr;</div>
-                        <div class="px-2 py-1 bg-slate-100 rounded-md text-sm">Epoching</div>
-                         <div class="text-slate-400 font-bold text-xl">&rarr;</div>
-                        <div class="px-2 py-1 bg-slate-100 rounded-md text-sm">Scaling</div>
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                        <h3 class="text-xl font-semibold text-slate-800">EEG Data Preprocessing Pipeline</h3>
+                        <span class="text-xs font-medium px-2.5 py-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-full w-fit">Standard Preprocessing Flow</span>
+                    </div>
+                    <div class="overflow-x-auto pb-4 pt-2 -mx-2 px-2">
+                        <svg viewBox="-40 0 1720 245" class="w-full h-auto min-w-[1150px] select-none text-slate-800" style="font-family: 'Inter', system-ui, -apple-system, sans-serif;">
+                            <defs>
+                                <!-- Marker for black arrow -->
+                                <marker id="arrow-black" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                                    <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#0f172a" />
+                                </marker>
+                                <!-- Marker for amber arrows -->
+                                <marker id="arrow-amber" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                                    <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#d97706" />
+                                </marker>
+
+                                <!-- Box shadow filter -->
+                                <filter id="box-shadow" x="-5%" y="-5%" width="110%" height="115%" filterUnits="objectBoundingBox">
+                                    <feDropShadow dx="0" dy="1" stdDeviation="1.5" flood-opacity="0.06" />
+                                </filter>
+                            </defs>
+
+                            <!-- 0. Signal Acquisition -->
+                            <g class="pipeline-node cursor-default">
+                                <g transform="translate(26, 13)">
+                                    <path d="M42,52 C38,52 35,49 32,46 C27,47 20,44 17,39 C14,35 15,28 19,23 C22,18 28,15 36,13 C44,11 54,13 60,19 C66,24 68,31 66,38 C64,43 59,47 53,49 C50,51 46,52 42,52 Z" fill="#0f172a"/>
+                                    <path d="M49,46 C55,47 60,43 62,38 C62,37 60,37 59,38 C56,41 52,43 47,43 Z" fill="#0f172a"/>
+                                    <path d="M38,52 C40,56 43,57 45,55 C46,54 46,52 45,50 Z" fill="#0f172a"/>
+                                    <path d="M40,32 Q29,28 22,25 M30,29 Q26,21 25,16 M40,32 Q41,20 43,14 M40,32 Q49,25 56,23 M49,27 Q55,33 58,37 M40,32 Q33,39 27,39 M40,32 Q45,41 48,46" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+                                    <circle cx="22" cy="25" r="2.4" fill="#ffffff" />
+                                    <circle cx="25" cy="16" r="2.4" fill="#ffffff" />
+                                    <circle cx="43" cy="14" r="2.4" fill="#ffffff" />
+                                    <circle cx="56" cy="23" r="2.4" fill="#ffffff" />
+                                    <circle cx="58" cy="37" r="2.4" fill="#ffffff" />
+                                    <circle cx="27" cy="39" r="2.4" fill="#ffffff" />
+                                    <circle cx="48" cy="46" r="2.4" fill="#ffffff" />
+                                    <circle cx="40" cy="32" r="3" fill="#ffffff" />
+                                </g>
+                                <text x="68" y="99" text-anchor="middle" font-size="12.5" font-weight="600" fill="#0f172a">Signal Acquisition</text>
+                            </g>
+
+                            <!-- Arrow 0 -> 1 (Black) -->
+                            <line x1="104" y1="58" x2="142" y2="58" stroke="#0f172a" stroke-width="1.8" marker-end="url(#arrow-black)" />
+
+                            <!-- 1. PsychoPy and EEG data merging -->
+                            <g class="pipeline-node cursor-default">
+                                <rect x="150" y="20" width="160" height="76" rx="4" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5" filter="url(#box-shadow)" />
+                                <text x="230" y="41" text-anchor="middle" font-size="11.5" font-style="italic" font-weight="600" fill="#1d4ed8">Only for Imag2Emo:</text>
+                                <text x="230" y="60" text-anchor="middle" font-size="13" font-weight="500" fill="#0f172a">PsychoPy and EEG</text>
+                                <text x="230" y="78" text-anchor="middle" font-size="13" font-weight="500" fill="#0f172a">data merging</text>
+                            </g>
+
+                            <!-- Arrow 1 -> 2 (Amber) -->
+                            <line x1="310" y1="58" x2="342" y2="58" stroke="#d97706" stroke-width="1.8" marker-end="url(#arrow-amber)" />
+
+                            <!-- 2. Band-pass & Notch Filter -->
+                            <g class="pipeline-node cursor-default">
+                                <rect x="350" y="20" width="160" height="76" rx="4" fill="#fefce8" stroke="#eab308" stroke-width="1.5" filter="url(#box-shadow)" />
+                                <text x="430" y="45" text-anchor="middle" font-size="13" font-weight="500" fill="#0f172a">4 - 64 Hz Band-Pass</text>
+                                <text x="430" y="63" text-anchor="middle" font-size="13" font-weight="500" fill="#0f172a">Filter</text>
+                                <text x="430" y="81" text-anchor="middle" font-size="13" font-weight="500" fill="#0f172a">50 Hz Notch Filter</text>
+                            </g>
+
+                            <!-- Arrow 2 -> 3 (Amber) -->
+                            <line x1="510" y1="58" x2="542" y2="58" stroke="#d97706" stroke-width="1.8" marker-end="url(#arrow-amber)" />
+
+                            <!-- 3. PREP Pipeline -->
+                            <g class="pipeline-node cursor-default">
+                                <rect x="550" y="20" width="145" height="76" rx="4" fill="#fefce8" stroke="#eab308" stroke-width="1.5" filter="url(#box-shadow)" />
+                                <text x="622.5" y="63" text-anchor="middle" font-size="14" font-weight="500" fill="#0f172a">PREP Pipeline</text>
+                            </g>
+
+                            <!-- Arrow 3 -> 4 (DOWN, Amber) -->
+                            <line x1="622.5" y1="96" x2="622.5" y2="137" stroke="#d97706" stroke-width="1.8" marker-end="url(#arrow-amber)" />
+
+                            <!-- 4. Removing and interpolating noisy channels (Bottom row) -->
+                            <g class="pipeline-node cursor-default">
+                                <rect x="540" y="145" width="165" height="76" rx="4" fill="#fff7ed" stroke="#f97316" stroke-width="1.5" filter="url(#box-shadow)" />
+                                <text x="622.5" y="170" text-anchor="middle" font-size="13" font-weight="500" fill="#0f172a">Removing and</text>
+                                <text x="622.5" y="188" text-anchor="middle" font-size="13" font-weight="500" fill="#0f172a">interpolating noisy</text>
+                                <text x="622.5" y="206" text-anchor="middle" font-size="13" font-weight="500" fill="#0f172a">channels</text>
+                            </g>
+
+                            <!-- Arrow 4 -> 5 (RIGHT, Amber) -->
+                            <line x1="705" y1="183" x2="737" y2="183" stroke="#d97706" stroke-width="1.8" marker-end="url(#arrow-amber)" />
+
+                            <!-- 5. Robust CAR (Bottom row) -->
+                            <g class="pipeline-node cursor-default">
+                                <rect x="745" y="145" width="145" height="76" rx="4" fill="#fff7ed" stroke="#f97316" stroke-width="1.5" filter="url(#box-shadow)" />
+                                <text x="817.5" y="189" text-anchor="middle" font-size="14" font-weight="500" fill="#0f172a">Robust CAR</text>
+                            </g>
+
+                            <!-- Arrow 5 -> 6 (UP, Amber) -->
+                            <line x1="817.5" y1="145" x2="817.5" y2="104" stroke="#d97706" stroke-width="1.8" marker-end="url(#arrow-amber)" />
+
+                            <!-- 6. ICA with Extended Infomax -->
+                            <g class="pipeline-node cursor-default">
+                                <rect x="745" y="20" width="145" height="76" rx="4" fill="#fefce8" stroke="#eab308" stroke-width="1.5" filter="url(#box-shadow)" />
+                                <text x="817.5" y="54" text-anchor="middle" font-size="13" font-weight="500" fill="#0f172a">ICA with</text>
+                                <text x="817.5" y="73" text-anchor="middle" font-size="13" font-weight="500" fill="#0f172a">Extended Infomax</text>
+                            </g>
+
+                            <!-- Arrow 6 -> 7 (Amber) -->
+                            <line x1="890" y1="58" x2="922" y2="58" stroke="#d97706" stroke-width="1.8" marker-end="url(#arrow-amber)" />
+
+                            <!-- 7. Removing ICs artifact with IClabels -->
+                            <g class="pipeline-node cursor-default">
+                                <rect x="930" y="20" width="165" height="76" rx="4" fill="#fefce8" stroke="#eab308" stroke-width="1.5" filter="url(#box-shadow)" />
+                                <text x="1012.5" y="54" text-anchor="middle" font-size="13" font-weight="500" fill="#0f172a">Removing ICs artifact</text>
+                                <text x="1012.5" y="73" text-anchor="middle" font-size="13" font-weight="500" fill="#0f172a">with IClabels</text>
+                            </g>
+
+                            <!-- Arrow 7 -> 8 (Amber) -->
+                            <line x1="1095" y1="58" x2="1127" y2="58" stroke="#d97706" stroke-width="1.8" marker-end="url(#arrow-amber)" />
+
+                            <!-- 8. Resample 128 Hz -->
+                            <g class="pipeline-node cursor-default">
+                                <rect x="1135" y="20" width="145" height="76" rx="4" fill="#fefce8" stroke="#eab308" stroke-width="1.5" filter="url(#box-shadow)" />
+                                <text x="1207.5" y="63" text-anchor="middle" font-size="13" font-weight="500" fill="#0f172a">Resample 128 Hz</text>
+                            </g>
+
+                            <!-- Arrow 8 -> 9 (Amber) -->
+                            <line x1="1280" y1="58" x2="1312" y2="58" stroke="#d97706" stroke-width="1.8" marker-end="url(#arrow-amber)" />
+
+                            <!-- 9. Epoching -->
+                            <g class="pipeline-node cursor-default">
+                                <rect x="1320" y="20" width="135" height="76" rx="4" fill="#fefce8" stroke="#eab308" stroke-width="1.5" filter="url(#box-shadow)" />
+                                <text x="1387.5" y="63" text-anchor="middle" font-size="14" font-weight="500" fill="#0f172a">Epoching</text>
+                            </g>
+
+                            <!-- Arrow 9 -> 10 (Amber) -->
+                            <line x1="1455" y1="58" x2="1487" y2="58" stroke="#d97706" stroke-width="1.8" marker-end="url(#arrow-amber)" />
+
+                            <!-- 10. Data Scaling -->
+                            <g class="pipeline-node cursor-default">
+                                <rect x="1495" y="20" width="135" height="76" rx="4" fill="#fefce8" stroke="#eab308" stroke-width="1.5" filter="url(#box-shadow)" />
+                                <text x="1562.5" y="63" text-anchor="middle" font-size="14" font-weight="500" fill="#0f172a">Data Scaling</text>
+                            </g>
+                        </svg>
                     </div>
                 </div>
                 
