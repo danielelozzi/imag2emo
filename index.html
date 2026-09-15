@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EEG-Based Emotion Recognition: The Role of Subjectivity</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="transition_flow_data.js"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -51,6 +51,7 @@
             <div class="hidden md:flex space-x-8">
                 <a href="#home" class="nav-link">Home</a>
                 <a href="#dashboard" class="nav-link">Deep Learning Architectures</a>
+                <a href="#transitions-section" class="nav-link">Label Transitions & Subjectivity</a>
                 <a href="#interactive-dashboard" class="nav-link">Interactive Dashboard</a>
             </div>
             <button id="mobile-menu-button" class="md:hidden text-slate-800 focus:outline-none">
@@ -61,6 +62,7 @@
         <div id="mobile-menu" class="hidden md:hidden px-6 pb-4">
             <a href="#home" class="block py-2 nav-link">Home</a>
             <a href="#dashboard" class="block py-2 nav-link">Dashboard</a>
+            <a href="#transitions-section" class="block py-2 nav-link">Label Transitions & Subjectivity</a>
             <a href="#interactive-dashboard" class="block py-2 nav-link">Interactive Dashboard</a>
         </div>
     </header>
@@ -262,9 +264,218 @@ Standardized Labels</h1>
             </div>
         </section>
         
+        <!-- Interactive Label Binarization & Transitions Section -->
+        <section id="transitions-section" class="mb-24 scroll-mt-24 pt-6">
+            <div class="text-center max-w-4xl mx-auto mb-10">
+                <span class="text-xs font-semibold uppercase tracking-wider px-3 py-1 bg-blue-50 text-blue-700 border border-blue-200 rounded-full inline-block mb-3">
+                    Methodological Focus &bull; Subjectivity Analysis
+                </span>
+                <h2 class="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4">
+                    Interactive Label Binarization &amp; Transition Flow
+                </h2>
+                <p class="text-slate-600 text-sm md:text-base leading-relaxed">
+                    Continuous affective self-reports are traditionally converted into binary or discrete classes using an empirical threshold (<span class="font-semibold text-slate-800 italic">t<sub>label</sub></span>). As explored in the study, this threshold fundamentally shapes the class distribution, subjective reclassifications, and transition flow from <span class="font-semibold text-blue-600">Public</span> to <span class="font-semibold text-sky-500">Private</span> evaluations. Adjust the sliders below to explore the sensitivity of each diagram in real time.
+                </p>
+            </div>
+
+            <!-- Diagram Selector Buttons -->
+            <div class="flex flex-wrap justify-center gap-2 mb-8" id="diagram-tabs-container">
+                <button class="trans-tab px-4 py-2 text-sm font-medium rounded-lg border transition-all duration-200 bg-blue-600 text-white border-blue-600 shadow-sm" data-diagram="deap_valence">
+                    DEAP — Valence
+                </button>
+                <button class="trans-tab px-4 py-2 text-sm font-medium rounded-lg border transition-all duration-200 bg-white text-slate-700 border-slate-300 hover:bg-slate-50" data-diagram="deap_arousal">
+                    DEAP — Arousal
+                </button>
+                <button class="trans-tab px-4 py-2 text-sm font-medium rounded-lg border transition-all duration-200 bg-white text-slate-700 border-slate-300 hover:bg-slate-50" data-diagram="graz_valence">
+                    Imag2Emo — Valence
+                </button>
+                <button class="trans-tab px-4 py-2 text-sm font-medium rounded-lg border transition-all duration-200 bg-white text-slate-700 border-slate-300 hover:bg-slate-50" data-diagram="graz_arousal">
+                    Imag2Emo — Arousal
+                </button>
+                <button class="trans-tab px-4 py-2 text-sm font-medium rounded-lg border transition-all duration-200 bg-white text-slate-700 border-slate-300 hover:bg-slate-50" data-diagram="graz_hns">
+                    Imag2Emo — HNS (Discrete)
+                </button>
+            </div>
+
+            <!-- Main Layout: Controls + SVG Display -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                
+                <!-- Left Column: Controls & Metrics (5 cols) -->
+                <div class="lg:col-span-5 space-y-6">
+                    
+                    <!-- Binarization Controls Card -->
+                    <div class="card">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-bold text-slate-800">Threshold Controls</h3>
+                            <span id="trans-badge" class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+                                DEAP &bull; Valence
+                            </span>
+                        </div>
+
+                        <!-- Dimensional Controls (Valence / Arousal) -->
+                        <div id="trans-dim-controls" class="space-y-4">
+                            <!-- Unified Threshold Slider -->
+                            <div id="trans-unified-group">
+                                <div class="flex justify-between items-center text-sm mb-1.5">
+                                    <label for="trans-thresh-slider" class="font-medium text-slate-700">
+                                        Binarization Threshold <span class="text-xs text-slate-500 font-mono">(t<sub>label</sub>)</span>
+                                    </label>
+                                    <span id="trans-thresh-display" class="font-bold text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded text-sm border border-blue-200">4.50</span>
+                                </div>
+                                <input id="trans-thresh-slider" type="range" min="1.0" max="9.0" step="0.1" value="4.5" class="w-full accent-blue-600 cursor-pointer">
+                                <div class="flex justify-between text-[11px] text-slate-400 mt-1">
+                                    <span>1.0 (All High)</span>
+                                    <span>5.0 (Midpoint)</span>
+                                    <span>9.0 (All Low)</span>
+                                </div>
+                            </div>
+
+                            <!-- Split Sliders (Public vs Private) -->
+                            <div id="trans-split-group" class="hidden space-y-3 pt-2 border-t border-slate-100">
+                                <div>
+                                    <div class="flex justify-between text-sm mb-1">
+                                        <label for="trans-pub-slider" class="font-medium text-slate-700">Public Threshold <span class="text-xs text-blue-500 font-mono">(t<sub>pub</sub>)</span></label>
+                                        <span id="trans-pub-display" class="font-semibold text-blue-600">4.50</span>
+                                    </div>
+                                    <input id="trans-pub-slider" type="range" min="1.0" max="9.0" step="0.1" value="4.5" class="w-full accent-blue-600 cursor-pointer">
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-sm mb-1">
+                                        <label for="trans-priv-slider" class="font-medium text-slate-700">Private Threshold <span class="text-xs text-sky-500 font-mono">(t<sub>priv</sub>)</span></label>
+                                        <span id="trans-priv-display" class="font-semibold text-sky-600">4.50</span>
+                                    </div>
+                                    <input id="trans-priv-slider" type="range" min="1.0" max="9.0" step="0.1" value="4.5" class="w-full accent-sky-500 cursor-pointer">
+                                </div>
+                            </div>
+
+                            <!-- Split Toggle -->
+                            <div class="flex items-center justify-between pt-3 border-t border-slate-100">
+                                <label for="trans-split-toggle" class="text-xs text-slate-600 font-medium cursor-pointer">
+                                    Independent Public / Private Thresholds
+                                </label>
+                                <input type="checkbox" id="trans-split-toggle" class="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500 cursor-pointer">
+                            </div>
+
+                            <!-- Presets -->
+                            <div class="flex items-center gap-2 pt-2">
+                                <button id="btn-paper-preset" class="text-xs px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded font-medium transition">
+                                    Paper Default
+                                </button>
+                                <button id="btn-midpoint-preset" class="text-xs px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded font-medium transition">
+                                    Midpoint (5.0)
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Categorical Controls (HNS) -->
+                        <div id="trans-hns-controls" class="hidden space-y-4">
+                            <div>
+                                <div class="flex justify-between items-center text-sm mb-1.5">
+                                    <label for="trans-delta-slider" class="font-medium text-slate-700">
+                                        Intensity Margin <span class="text-xs text-slate-500 font-mono">(&Delta;<sub>H-S</sub>)</span>
+                                    </label>
+                                    <span id="trans-delta-display" class="font-bold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded text-sm border border-emerald-200">1.0</span>
+                                </div>
+                                <input id="trans-delta-slider" type="range" min="0.5" max="4.0" step="0.5" value="1.0" class="w-full accent-emerald-600 cursor-pointer">
+                                <p class="text-[11px] text-slate-500 mt-1 leading-snug">
+                                    Private category: Happiness if (Rate<sub>H</sub> - Rate<sub>S</sub>) &ge; &Delta;, Sadness if (Rate<sub>S</sub> - Rate<sub>H</sub>) &ge; &Delta;, else Neutral.
+                                </p>
+                            </div>
+
+                            <div class="pt-2 border-t border-slate-100">
+                                <label class="block text-xs font-medium text-slate-700 mb-1.5">Alignment Scheme:</label>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <button id="btn-seq-mode" class="text-xs py-1.5 px-2 rounded border bg-blue-50 border-blue-300 text-blue-700 font-semibold text-center transition">
+                                        Timeline Sequence (Paper)
+                                    </button>
+                                    <button id="btn-image-mode" class="text-xs py-1.5 px-2 rounded border bg-white border-slate-200 text-slate-600 hover:bg-slate-50 text-center transition">
+                                        Stimulus ID Match
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="pt-2">
+                                <button id="btn-hns-paper-preset" class="text-xs px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded font-medium transition">
+                                    Paper Default (&Delta; = 1.0)
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Transition & Stability Summary Card -->
+                    <div class="card">
+                        <div class="flex justify-between items-center mb-3">
+                            <h4 class="text-sm font-bold text-slate-800 uppercase tracking-wider">Flow Statistics</h4>
+                            <span id="trans-sample-count" class="text-xs font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-600">N = 880</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2.5 text-center mb-4">
+                            <div class="p-2.5 bg-emerald-50 border border-emerald-100 rounded-lg">
+                                <div class="text-[11px] text-emerald-700 font-medium">Stability</div>
+                                <div id="trans-stat-stability" class="text-lg font-black text-emerald-700 mt-0.5">78.8%</div>
+                            </div>
+                            <div class="p-2.5 bg-rose-50 border border-rose-100 rounded-lg">
+                                <div class="text-[11px] text-rose-700 font-medium">Transition</div>
+                                <div id="trans-stat-transition" class="text-lg font-black text-rose-700 mt-0.5">21.2%</div>
+                            </div>
+                            <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-lg">
+                                <div class="text-[11px] text-slate-600 font-medium">Balance</div>
+                                <div id="trans-stat-balance" class="text-xs font-bold text-slate-800 mt-1.5">1 : 3.7</div>
+                            </div>
+                        </div>
+
+                        <!-- Contingency Matrix Table -->
+                        <div>
+                            <div class="text-xs font-semibold text-slate-500 mb-1.5">
+                                Contingency Matrix (Public rows &rarr; Private columns)
+                            </div>
+                            <div id="trans-contingency-table" class="overflow-x-auto text-xs">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Methodological Note -->
+                    <div class="p-4 bg-amber-50/70 border border-amber-200 rounded-xl text-xs text-amber-900 leading-relaxed">
+                        <span class="font-semibold block mb-1">Key Finding from Paper Section IV:</span>
+                        Arbitrary threshold selection directly biases the class balance and distorts affective classification. An empirical shift as small as 0.5 significantly alters the perceived consistency between normative stimuli and subjective affective experience.
+                    </div>
+
+                </div>
+
+                <!-- Right Column: Interactive SVG Visualization (7 cols) -->
+                <div class="lg:col-span-7">
+                    <div class="card p-6 flex flex-col items-center justify-center min-h-[640px] relative overflow-hidden bg-white">
+                        
+                        <!-- Header inside diagram card -->
+                        <div class="w-full flex justify-between items-center pb-3 mb-2 border-b border-slate-100">
+                            <div>
+                                <h3 id="diagram-title-text" class="text-base font-bold text-slate-800">
+                                    Public &rarr; Private - VALENCE
+                                </h3>
+                                <p id="diagram-subtitle-text" class="text-xs text-slate-500">
+                                    DEAP Dataset &bull; 22 participants &bull; 880 trials
+                                </p>
+                            </div>
+                            <button id="btn-export-svg" title="Export as SVG image" class="text-xs font-medium px-2.5 py-1 text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded border border-slate-200 flex items-center gap-1 transition">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                Export SVG
+                            </button>
+                        </div>
+
+                        <!-- SVG Rendering Area -->
+                        <div id="diagram-svg-container" class="w-full flex justify-center items-center py-2">
+                            <!-- Injected SVG -->
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
         <!-- Interactive Dashboard Section -->
         <section id="interactive-dashboard" class="mb-24 interactive-dashboard">
-            <h2 class="section-title"></h2>
+            <h2 class="section-title">Deep Learning Classification Results</h2>
             <div class="card">
                 <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
                     <div>
@@ -502,8 +713,814 @@ Standardized Labels</h1>
         validationSelect.addEventListener('change', updateDashboard);
         modelSelect.addEventListener('change', updateDashboard);
 
-        // Initial setup
+        // Initial setup for results dashboard
         handleDatasetChange();
+
+
+        // =========================================================================
+        // INTERACTIVE LABEL BINARIZATION & TRANSITION FLOW ENGINE
+        // =========================================================================
+
+        const transState = {
+            currentDiagram: 'deap_valence',
+            thresholds: {
+                deap_valence: { pub: 4.5, priv: 4.5, split: false },
+                deap_arousal: { pub: 5.0, priv: 5.0, split: false },
+                graz_valence: { pub: 4.5, priv: 4.5, split: false },
+                graz_arousal: { pub: 5.0, priv: 5.0, split: false },
+                graz_hns: { delta: 1.0, pairing: 'seq' }
+            }
+        };
+
+        // DOM Elements
+        const transBadge = document.getElementById('trans-badge');
+        const transDimControls = document.getElementById('trans-dim-controls');
+        const transHnsControls = document.getElementById('trans-hns-controls');
+        const transUnifiedGroup = document.getElementById('trans-unified-group');
+        const transSplitGroup = document.getElementById('trans-split-group');
+        const transSplitToggle = document.getElementById('trans-split-toggle');
+
+        const transThreshSlider = document.getElementById('trans-thresh-slider');
+        const transThreshDisplay = document.getElementById('trans-thresh-display');
+        const transPubSlider = document.getElementById('trans-pub-slider');
+        const transPubDisplay = document.getElementById('trans-pub-display');
+        const transPrivSlider = document.getElementById('trans-priv-slider');
+        const transPrivDisplay = document.getElementById('trans-priv-display');
+
+        const transDeltaSlider = document.getElementById('trans-delta-slider');
+        const transDeltaDisplay = document.getElementById('trans-delta-display');
+        const btnSeqMode = document.getElementById('btn-seq-mode');
+        const btnImageMode = document.getElementById('btn-image-mode');
+
+        const btnPaperPreset = document.getElementById('btn-paper-preset');
+        const btnMidpointPreset = document.getElementById('btn-midpoint-preset');
+        const btnHnsPaperPreset = document.getElementById('btn-hns-paper-preset');
+        const btnExportSvg = document.getElementById('btn-export-svg');
+
+        const transStatStability = document.getElementById('trans-stat-stability');
+        const transStatTransition = document.getElementById('trans-stat-transition');
+        const transStatBalance = document.getElementById('trans-stat-balance');
+        const transSampleCount = document.getElementById('trans-sample-count');
+        const transContingencyTable = document.getElementById('trans-contingency-table');
+
+        const diagramTitleText = document.getElementById('diagram-title-text');
+        const diagramSubtitleText = document.getElementById('diagram-subtitle-text');
+        const diagramSvgContainer = document.getElementById('diagram-svg-container');
+        const diagramTabs = document.querySelectorAll('.trans-tab');
+
+        function getDiagramConfig(id) {
+            const configs = {
+                deap_valence: {
+                    type: 'valence',
+                    dataset: 'DEAP',
+                    title: 'Public → Private - VALENCE',
+                    subtitle: 'DEAP Dataset • 22 participants • 880 trials',
+                    badge: 'DEAP • Valence',
+                    defaultTh: 4.5
+                },
+                deap_arousal: {
+                    type: 'arousal',
+                    dataset: 'DEAP',
+                    title: 'Public → Private - AROUSAL',
+                    subtitle: 'DEAP Dataset • 22 participants • 880 trials',
+                    badge: 'DEAP • Arousal',
+                    defaultTh: 5.0
+                },
+                graz_valence: {
+                    type: 'valence',
+                    dataset: 'Imag2Emo',
+                    title: 'Public → Private - VALENCE',
+                    subtitle: 'Imag2Emo (Graz) Dataset • 11 participants • 1,980 trials',
+                    badge: 'Imag2Emo • Valence',
+                    defaultTh: 4.5
+                },
+                graz_arousal: {
+                    type: 'arousal',
+                    dataset: 'Imag2Emo',
+                    title: 'Public → Private - AROUSAL',
+                    subtitle: 'Imag2Emo (Graz) Dataset • 11 participants • 1,980 trials',
+                    badge: 'Imag2Emo • Arousal',
+                    defaultTh: 5.0
+                },
+                graz_hns: {
+                    type: 'hns',
+                    dataset: 'Imag2Emo',
+                    title: 'Emotional flow diagram: from Public to Private',
+                    subtitle: 'Imag2Emo (Graz) Dataset • Categorical HNS (Happiness, Sadness, Neutral)',
+                    badge: 'Imag2Emo • HNS',
+                    defaultDelta: 1.0
+                }
+            };
+            return configs[id];
+        }
+
+        function updateTransitionsUI() {
+            const cur = transState.currentDiagram;
+            const cfg = getDiagramConfig(cur);
+            transBadge.textContent = cfg.badge;
+            diagramTitleText.textContent = cfg.title;
+            diagramSubtitleText.textContent = cfg.subtitle;
+
+            // Tab button styles
+            diagramTabs.forEach(tab => {
+                if (tab.dataset.diagram === cur) {
+                    tab.className = 'trans-tab px-4 py-2 text-sm font-medium rounded-lg border transition-all duration-200 bg-blue-600 text-white border-blue-600 shadow-sm';
+                } else {
+                    tab.className = 'trans-tab px-4 py-2 text-sm font-medium rounded-lg border transition-all duration-200 bg-white text-slate-700 border-slate-300 hover:bg-slate-50';
+                }
+            });
+
+            if (cfg.type === 'hns') {
+                transDimControls.classList.add('hidden');
+                transHnsControls.classList.remove('hidden');
+                const st = transState.thresholds.graz_hns;
+                transDeltaSlider.value = st.delta;
+                transDeltaDisplay.textContent = Number(st.delta).toFixed(1);
+
+                if (st.pairing === 'seq') {
+                    btnSeqMode.className = 'text-xs py-1.5 px-2 rounded border bg-blue-50 border-blue-300 text-blue-700 font-semibold text-center transition';
+                    btnImageMode.className = 'text-xs py-1.5 px-2 rounded border bg-white border-slate-200 text-slate-600 hover:bg-slate-50 text-center transition';
+                } else {
+                    btnImageMode.className = 'text-xs py-1.5 px-2 rounded border bg-blue-50 border-blue-300 text-blue-700 font-semibold text-center transition';
+                    btnSeqMode.className = 'text-xs py-1.5 px-2 rounded border bg-white border-slate-200 text-slate-600 hover:bg-slate-50 text-center transition';
+                }
+            } else {
+                transHnsControls.classList.add('hidden');
+                transDimControls.classList.remove('hidden');
+                const st = transState.thresholds[cur];
+                transSplitToggle.checked = st.split;
+
+                if (st.split) {
+                    transUnifiedGroup.classList.add('hidden');
+                    transSplitGroup.classList.remove('hidden');
+                    transPubSlider.value = st.pub;
+                    transPubDisplay.textContent = Number(st.pub).toFixed(2);
+                    transPrivSlider.value = st.priv;
+                    transPrivDisplay.textContent = Number(st.priv).toFixed(2);
+                } else {
+                    transSplitGroup.classList.add('hidden');
+                    transUnifiedGroup.classList.remove('hidden');
+                    transThreshSlider.value = st.pub;
+                    transThreshDisplay.textContent = Number(st.pub).toFixed(2);
+                }
+            }
+
+            renderTransitions();
+        }
+
+        function renderTransitions() {
+            if (typeof TRANSITION_FLOW_DATA === 'undefined') {
+                diagramSvgContainer.innerHTML = `<div class="p-8 text-center text-amber-600">transition_flow_data.js not loaded. Please verify data files.</div>`;
+                return;
+            }
+
+            const cur = transState.currentDiagram;
+            const cfg = getDiagramConfig(cur);
+
+            if (cfg.type === 'valence' || cfg.type === 'arousal') {
+                const st = transState.thresholds[cur];
+                const thPub = st.split ? Number(st.pub) : Number(st.pub);
+                const thPriv = st.split ? Number(st.priv) : Number(st.pub);
+
+                const dataObj = (cfg.dataset === 'DEAP') ? TRANSITION_FLOW_DATA.deap : TRANSITION_FLOW_DATA.graz;
+                const pubArr = (cfg.type === 'valence') ? dataObj.valence_pub : dataObj.arousal_pub;
+                const privArr = (cfg.type === 'valence') ? dataObj.valence_priv : dataObj.arousal_priv;
+
+                const n = pubArr.length;
+                let c00 = 0, c01 = 0, c10 = 0, c11 = 0;
+                for (let i = 0; i < n; i++) {
+                    const p = pubArr[i] >= thPub ? 1 : 0;
+                    const pr = privArr[i] >= thPriv ? 1 : 0;
+                    if (p === 0 && pr === 0) c00++;
+                    else if (p === 0 && pr === 1) c01++;
+                    else if (p === 1 && pr === 0) c10++;
+                    else if (p === 1 && pr === 1) c11++;
+                }
+
+                const pubLow = c00 + c01;
+                const pubHigh = c10 + c11;
+                const privLow = c00 + c10;
+                const privHigh = c01 + c11;
+
+                const pct00 = pubLow > 0 ? (c00 / pubLow) * 100 : 0;
+                const pct01 = pubLow > 0 ? (c01 / pubLow) * 100 : 0;
+                const pct10 = pubHigh > 0 ? (c10 / pubHigh) * 100 : 0;
+                const pct11 = pubHigh > 0 ? (c11 / pubHigh) * 100 : 0;
+
+                const stableTotal = c00 + c11;
+                const stabilityPct = (stableTotal / n) * 100;
+                const transitionPct = 100 - stabilityPct;
+                const balanceStr = (pubHigh > 0) ? `1 : ${(pubHigh / (pubLow || 1)).toFixed(2)}` : 'N/A';
+
+                // Update metrics cards
+                transStatStability.textContent = stabilityPct.toFixed(1) + '%';
+                transStatTransition.textContent = transitionPct.toFixed(1) + '%';
+                transStatBalance.textContent = balanceStr;
+                transSampleCount.textContent = `N = ${n}`;
+
+                // Update Contingency Matrix
+                const labelLow = (cfg.type === 'valence') ? 'LV' : 'LA';
+                const labelHigh = (cfg.type === 'valence') ? 'HV' : 'HA';
+
+                transContingencyTable.innerHTML = `
+                    <table class="w-full border-collapse border border-slate-200 text-center">
+                        <thead class="bg-slate-100 text-slate-700">
+                            <tr>
+                                <th class="p-1.5 border border-slate-200 font-semibold text-left">Public \\ Private</th>
+                                <th class="p-1.5 border border-slate-200 font-semibold">${labelLow}</th>
+                                <th class="p-1.5 border border-slate-200 font-semibold">${labelHigh}</th>
+                                <th class="p-1.5 border border-slate-200 font-semibold bg-slate-200/60">Total Pub</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="p-1.5 border border-slate-200 font-medium text-left bg-slate-50">${labelLow}</td>
+                                <td class="p-1.5 border border-slate-200 bg-emerald-50/60 font-bold text-emerald-800">
+                                    ${c00} <span class="text-[10px] font-normal text-emerald-600 block">(${pct00.toFixed(1)}%)</span>
+                                </td>
+                                <td class="p-1.5 border border-slate-200 bg-rose-50/50 font-medium text-rose-800">
+                                    ${c01} <span class="text-[10px] font-normal text-rose-600 block">(${pct01.toFixed(1)}%)</span>
+                                </td>
+                                <td class="p-1.5 border border-slate-200 font-bold text-slate-700 bg-slate-100">${pubLow}</td>
+                            </tr>
+                            <tr>
+                                <td class="p-1.5 border border-slate-200 font-medium text-left bg-slate-50">${labelHigh}</td>
+                                <td class="p-1.5 border border-slate-200 bg-rose-50/50 font-medium text-rose-800">
+                                    ${c10} <span class="text-[10px] font-normal text-rose-600 block">(${pct10.toFixed(1)}%)</span>
+                                </td>
+                                <td class="p-1.5 border border-slate-200 bg-emerald-50/60 font-bold text-emerald-800">
+                                    ${c11} <span class="text-[10px] font-normal text-emerald-600 block">(${pct11.toFixed(1)}%)</span>
+                                </td>
+                                <td class="p-1.5 border border-slate-200 font-bold text-slate-700 bg-slate-100">${pubHigh}</td>
+                            </tr>
+                        </tbody>
+                        <tfoot class="bg-slate-100 font-semibold text-slate-700">
+                            <tr>
+                                <td class="p-1.5 border border-slate-200 text-left bg-slate-200/60">Total Priv</td>
+                                <td class="p-1.5 border border-slate-200">${privLow}</td>
+                                <td class="p-1.5 border border-slate-200">${privHigh}</td>
+                                <td class="p-1.5 border border-slate-200 bg-slate-200 font-black">${n}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                `;
+
+                // Render SVG
+                if (cfg.type === 'valence') {
+                    diagramSvgContainer.innerHTML = buildValenceSVG({
+                        c00, c01, c10, c11,
+                        pct00, pct01, pct10, pct11,
+                        pubLow, pubHigh, privLow, privHigh,
+                        n, labelLow, labelHigh
+                    });
+                } else {
+                    diagramSvgContainer.innerHTML = buildArousalSVG({
+                        c00, c01, c10, c11,
+                        pct00, pct01, pct10, pct11,
+                        pubLow, pubHigh, privLow, privHigh,
+                        n, labelLow, labelHigh
+                    });
+                }
+
+            } else if (cfg.type === 'hns') {
+                const st = transState.thresholds.graz_hns;
+                const delta = Number(st.delta);
+                const pairing = st.pairing;
+
+                const gData = (pairing === 'seq' && TRANSITION_FLOW_DATA.graz.seq)
+                    ? TRANSITION_FLOW_DATA.graz.seq
+                    : TRANSITION_FLOW_DATA.graz;
+
+                const pubHnsArr = gData.hns_pub;
+                const rhArr = gData.rate_happiness;
+                const rsArr = gData.rate_sadness;
+                const n = pubHnsArr.length;
+
+                const trans = {
+                    'H,H': 0, 'H,S': 0, 'H,N': 0,
+                    'S,H': 0, 'S,S': 0, 'S,N': 0,
+                    'N,H': 0, 'N,S': 0, 'N,N': 0
+                };
+                const pubCounts = { H: 0, S: 0, N: 0 };
+                const privCounts = { H: 0, S: 0, N: 0 };
+
+                for (let i = 0; i < n; i++) {
+                    const pub = pubHnsArr[i];
+                    const diff = rhArr[i] - rsArr[i];
+                    let priv = 'N';
+                    if (diff >= delta) priv = 'H';
+                    else if (diff <= -delta) priv = 'S';
+
+                    trans[`${pub},${priv}`]++;
+                    pubCounts[pub] = (pubCounts[pub] || 0) + 1;
+                    privCounts[priv] = (privCounts[priv] || 0) + 1;
+                }
+
+                const pcts = {};
+                ['H', 'S', 'N'].forEach(p => {
+                    const tot = pubCounts[p] || 1;
+                    ['H', 'S', 'N'].forEach(pr => {
+                        pcts[`${p},${pr}`] = (trans[`${p},${pr}`] / tot) * 100;
+                    });
+                });
+
+                const stableTotal = trans['H,H'] + trans['S,S'] + trans['N,N'];
+                const stabilityPct = (stableTotal / n) * 100;
+                const transitionPct = 100 - stabilityPct;
+
+                transStatStability.textContent = stabilityPct.toFixed(1) + '%';
+                transStatTransition.textContent = transitionPct.toFixed(1) + '%';
+                transStatBalance.textContent = `${pubCounts.H} : ${pubCounts.S} : ${pubCounts.N}`;
+                transSampleCount.textContent = `N = ${n}`;
+
+                // Contingency Table
+                transContingencyTable.innerHTML = `
+                    <table class="w-full border-collapse border border-slate-200 text-center">
+                        <thead class="bg-slate-100 text-slate-700">
+                            <tr>
+                                <th class="p-1.5 border border-slate-200 font-semibold text-left">Public \\ Private</th>
+                                <th class="p-1.5 border border-slate-200 font-semibold text-emerald-700">H (Happiness)</th>
+                                <th class="p-1.5 border border-slate-200 font-semibold text-rose-700">S (Sadness)</th>
+                                <th class="p-1.5 border border-slate-200 font-semibold text-slate-700">N (Neutral)</th>
+                                <th class="p-1.5 border border-slate-200 font-semibold bg-slate-200/60">Total Pub</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="p-1.5 border border-slate-200 font-bold text-left text-emerald-700 bg-emerald-50/40">H</td>
+                                <td class="p-1.5 border border-slate-200 bg-emerald-100/60 font-black text-emerald-800">${trans['H,H']} <span class="text-[10px] font-normal block">(${pcts['H,H'].toFixed(1)}%)</span></td>
+                                <td class="p-1.5 border border-slate-200 bg-rose-50/50 text-rose-800">${trans['H,S']} <span class="text-[10px] font-normal block">(${pcts['H,S'].toFixed(1)}%)</span></td>
+                                <td class="p-1.5 border border-slate-200 bg-slate-50 text-slate-700">${trans['H,N']} <span class="text-[10px] font-normal block">(${pcts['H,N'].toFixed(1)}%)</span></td>
+                                <td class="p-1.5 border border-slate-200 font-bold bg-slate-100">${pubCounts.H}</td>
+                            </tr>
+                            <tr>
+                                <td class="p-1.5 border border-slate-200 font-bold text-left text-rose-700 bg-rose-50/40">S</td>
+                                <td class="p-1.5 border border-slate-200 bg-rose-50/50 text-rose-800">${trans['S,H']} <span class="text-[10px] font-normal block">(${pcts['S,H'].toFixed(1)}%)</span></td>
+                                <td class="p-1.5 border border-slate-200 bg-rose-100/60 font-black text-rose-800">${trans['S,S']} <span class="text-[10px] font-normal block">(${pcts['S,S'].toFixed(1)}%)</span></td>
+                                <td class="p-1.5 border border-slate-200 bg-slate-50 text-slate-700">${trans['S,N']} <span class="text-[10px] font-normal block">(${pcts['S,N'].toFixed(1)}%)</span></td>
+                                <td class="p-1.5 border border-slate-200 font-bold bg-slate-100">${pubCounts.S}</td>
+                            </tr>
+                            <tr>
+                                <td class="p-1.5 border border-slate-200 font-bold text-left text-slate-700 bg-slate-50">N</td>
+                                <td class="p-1.5 border border-slate-200 bg-emerald-50/30 text-emerald-800">${trans['N,H']} <span class="text-[10px] font-normal block">(${pcts['N,H'].toFixed(1)}%)</span></td>
+                                <td class="p-1.5 border border-slate-200 bg-rose-50/30 text-rose-800">${trans['N,S']} <span class="text-[10px] font-normal block">(${pcts['N,S'].toFixed(1)}%)</span></td>
+                                <td class="p-1.5 border border-slate-200 bg-slate-200/60 font-black text-slate-800">${trans['N,N']} <span class="text-[10px] font-normal block">(${pcts['N,N'].toFixed(1)}%)</span></td>
+                                <td class="p-1.5 border border-slate-200 font-bold bg-slate-100">${pubCounts.N}</td>
+                            </tr>
+                        </tbody>
+                        <tfoot class="bg-slate-100 font-semibold text-slate-700">
+                            <tr>
+                                <td class="p-1.5 border border-slate-200 text-left bg-slate-200/60">Total Priv</td>
+                                <td class="p-1.5 border border-slate-200 text-emerald-800">${privCounts.H}</td>
+                                <td class="p-1.5 border border-slate-200 text-rose-800">${privCounts.S}</td>
+                                <td class="p-1.5 border border-slate-200 text-slate-800">${privCounts.N}</td>
+                                <td class="p-1.5 border border-slate-200 bg-slate-200 font-black">${n}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                `;
+
+                diagramSvgContainer.innerHTML = buildHNSSVG({
+                    trans, pcts, pubCounts, privCounts, n
+                });
+            }
+        }
+
+        // SVG Builder: Valence
+        function buildValenceSVG(d) {
+            // Radii based on stability %
+            const r0 = Math.max(30, 25 + (d.pct00 / 100) * 80);
+            const r1 = Math.max(30, 25 + (d.pct11 / 100) * 80);
+
+            // Left node center (190, 300), Right node center (410, 300)
+            const cx0 = 190, cy0 = 300;
+            const cx1 = 410, cy1 = 300;
+
+            const arrowTopWidth = Math.max(2, (d.c01 / d.n) * 22);
+            const arrowBottomWidth = Math.max(2, (d.c10 / d.n) * 22);
+
+            return `
+            <svg viewBox="0 0 600 600" class="w-full h-auto max-w-[560px] select-none text-slate-800 font-sans" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <marker id="arrow-v-red" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                        <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#d62728" />
+                    </marker>
+                    <marker id="arrow-v-pink" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                        <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#f4a7b9" />
+                    </marker>
+                    <filter id="shadow-v" x="-10%" y="-10%" width="120%" height="120%">
+                        <feDropShadow dx="0" dy="1" stdDeviation="2" flood-opacity="0.1"/>
+                    </filter>
+                </defs>
+
+                <!-- Border Box -->
+                <rect x="2" y="2" width="596" height="596" fill="#ffffff" stroke="#0f172a" stroke-width="1.2" />
+
+                <!-- Title -->
+                <text x="300" y="32" text-anchor="middle" font-size="19" font-weight="600" fill="#0f172a">
+                    Public → Private - VALENCE
+                </text>
+
+                <!-- Dividing Vertical Line -->
+                <line x1="300" y1="42" x2="300" y2="598" stroke="#0f172a" stroke-width="1.2" />
+
+                <!-- Legend Top-Left -->
+                <g transform="translate(8, 48)">
+                    <rect x="0" y="0" width="34" height="34" fill="#6ba2ce" />
+                    <text x="44" y="23" font-size="17" font-weight="500" fill="#0f172a">Public</text>
+                    <rect x="0" y="42" width="34" height="34" fill="#bce2ee" />
+                    <text x="44" y="65" font-size="17" font-weight="500" fill="#0f172a">Private</text>
+                </g>
+
+                <!-- Left Circle (LV) -->
+                <circle cx="${cx0}" cy="${cy0}" r="${r0}" fill="#6ba2ce" fill-opacity="0.85" stroke="#4a8ab8" stroke-width="1.5" />
+                <text x="${cx0}" y="${cy0 + 6}" text-anchor="middle" font-size="${Math.max(16, r0*0.35)}" font-weight="bold" fill="#0f172a">
+                    ${d.pct00.toFixed(1)}%
+                </text>
+
+                <!-- Right Circle (HV) -->
+                <circle cx="${cx1}" cy="${cy1}" r="${r1}" fill="#bce2ee" fill-opacity="0.85" stroke="#9ad1e0" stroke-width="1.5" />
+                <text x="${cx1}" y="${cy1 + 6}" text-anchor="middle" font-size="${Math.max(16, r1*0.35)}" font-weight="bold" fill="#0f172a">
+                    ${d.pct11.toFixed(1)}%
+                </text>
+
+                <!-- Arrow LV -> HV (Top curved red arrow) -->
+                ${d.c01 > 0 ? `
+                <path d="M ${cx0 + r0 * 0.45} ${cy0 - r0 * 0.55} Q 300 215 ${cx1 - r1 * 0.55} ${cy1 - r1 * 0.45}"
+                      fill="none" stroke="#d62728" stroke-width="${arrowTopWidth}" marker-end="url(#arrow-v-red)" stroke-linecap="round" />
+                <g transform="translate(300, 260)">
+                    <rect x="-38" y="-13" width="76" height="26" rx="4" fill="#ffffff" stroke="#d62728" stroke-width="1.2" filter="url(#shadow-v)" />
+                    <text x="0" y="5" text-anchor="middle" font-size="15" font-weight="bold" fill="#d62728">${d.pct01.toFixed(1)}%</text>
+                </g>
+                ` : ''}
+
+                <!-- Arrow HV -> LV (Bottom curved pink arrow) -->
+                ${d.c10 > 0 ? `
+                <path d="M ${cx1 - r1 * 0.45} ${cy1 + r1 * 0.55} Q 300 385 ${cx0 + r0 * 0.55} ${cy0 + r0 * 0.45}"
+                      fill="none" stroke="#f4a7b9" stroke-width="${arrowBottomWidth}" marker-end="url(#arrow-v-pink)" stroke-linecap="round" />
+                <g transform="translate(300, 340)">
+                    <rect x="-38" y="-13" width="76" height="26" rx="4" fill="#ffffff" stroke="#f4a7b9" stroke-width="1.2" filter="url(#shadow-v)" />
+                    <text x="0" y="5" text-anchor="middle" font-size="15" font-weight="bold" fill="#0f172a">${d.pct10.toFixed(1)}%</text>
+                </g>
+                ` : ''}
+
+                <!-- Corner Info Box: LV (Bottom-Left) -->
+                <g transform="translate(14, 520)">
+                    <rect x="0" y="0" width="105" height="62" rx="4" fill="#ffffff" stroke="#0f172a" stroke-width="1" />
+                    <text x="8" y="18" font-size="13" font-weight="bold" fill="#0f172a">${d.labelLow}</text>
+                    <text x="8" y="36" font-size="12" fill="#334155">Public: ${d.pubLow}</text>
+                    <text x="8" y="52" font-size="12" fill="#334155">Private: ${d.privLow}</text>
+                </g>
+
+                <!-- Corner Info Box: HV (Bottom-Right) -->
+                <g transform="translate(480, 520)">
+                    <rect x="0" y="0" width="105" height="62" rx="4" fill="#ffffff" stroke="#0f172a" stroke-width="1" />
+                    <text x="8" y="18" font-size="13" font-weight="bold" fill="#0f172a">${d.labelHigh}</text>
+                    <text x="8" y="36" font-size="12" fill="#334155">Public: ${d.pubHigh}</text>
+                    <text x="8" y="52" font-size="12" fill="#334155">Private: ${d.privHigh}</text>
+                </g>
+            </svg>
+            `;
+        }
+
+        // SVG Builder: Arousal
+        function buildArousalSVG(d) {
+            const r0 = Math.max(30, 25 + (d.pct00 / 100) * 80); // LA (Bottom)
+            const r1 = Math.max(30, 25 + (d.pct11 / 100) * 80); // HA (Top)
+
+            const cx = 300;
+            const cy0 = 430; // Bottom (LA)
+            const cy1 = 175; // Top (HA)
+
+            const arrowRightWidth = Math.max(2, (d.c01 / d.n) * 22);
+            const arrowLeftWidth = Math.max(2, (d.c10 / d.n) * 22);
+
+            return `
+            <svg viewBox="0 0 600 600" class="w-full h-auto max-w-[560px] select-none text-slate-800 font-sans" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <marker id="arrow-a-red" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                        <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#d62728" />
+                    </marker>
+                    <marker id="arrow-a-pink" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                        <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#f4a7b9" />
+                    </marker>
+                    <filter id="shadow-a" x="-10%" y="-10%" width="120%" height="120%">
+                        <feDropShadow dx="0" dy="1" stdDeviation="2" flood-opacity="0.1"/>
+                    </filter>
+                </defs>
+
+                <!-- Border Box -->
+                <rect x="2" y="2" width="596" height="596" fill="#ffffff" stroke="#0f172a" stroke-width="1.2" />
+
+                <!-- Title -->
+                <text x="300" y="32" text-anchor="middle" font-size="19" font-weight="600" fill="#0f172a">
+                    Public → Private - AROUSAL
+                </text>
+
+                <!-- Dividing Horizontal Line -->
+                <line x1="2" y1="300" x2="598" y2="300" stroke="#0f172a" stroke-width="1.2" />
+
+                <!-- Legend Top-Left -->
+                <g transform="translate(8, 48)">
+                    <rect x="0" y="0" width="34" height="34" fill="#6ba2ce" />
+                    <text x="44" y="23" font-size="17" font-weight="500" fill="#0f172a">Public</text>
+                    <rect x="0" y="42" width="34" height="34" fill="#bce2ee" />
+                    <text x="44" y="65" font-size="17" font-weight="500" fill="#0f172a">Private</text>
+                </g>
+
+                <!-- Bottom Circle (LA) -->
+                <circle cx="${cx}" cy="${cy0}" r="${r0}" fill="#6ba2ce" fill-opacity="0.85" stroke="#4a8ab8" stroke-width="1.5" />
+                <text x="${cx}" y="${cy0 + 6}" text-anchor="middle" font-size="${Math.max(16, r0*0.35)}" font-weight="bold" fill="#0f172a">
+                    ${d.pct00.toFixed(1)}%
+                </text>
+
+                <!-- Top Circle (HA) -->
+                <circle cx="${cx}" cy="${cy1}" r="${r1}" fill="#bce2ee" fill-opacity="0.85" stroke="#9ad1e0" stroke-width="1.5" />
+                <text x="${cx}" y="${cy1 + 6}" text-anchor="middle" font-size="${Math.max(16, r1*0.35)}" font-weight="bold" fill="#0f172a">
+                    ${d.pct11.toFixed(1)}%
+                </text>
+
+                <!-- Arrow LA -> HA (Right curved red arrow, pointing up) -->
+                ${d.c01 > 0 ? `
+                <path d="M ${cx + r0 * 0.55} ${cy0 - r0 * 0.45} Q 380 300 ${cx + r1 * 0.55} ${cy1 + r1 * 0.55}"
+                      fill="none" stroke="#d62728" stroke-width="${arrowRightWidth}" marker-end="url(#arrow-a-red)" stroke-linecap="round" />
+                <g transform="translate(345, 300)">
+                    <rect x="-32" y="-13" width="64" height="26" rx="4" fill="#ffffff" stroke="#d62728" stroke-width="1.2" filter="url(#shadow-a)" />
+                    <text x="0" y="5" text-anchor="middle" font-size="15" font-weight="bold" fill="#d62728">${d.pct01.toFixed(1)}%</text>
+                </g>
+                ` : ''}
+
+                <!-- Arrow HA -> LA (Left curved pink arrow, pointing down) -->
+                ${d.c10 > 0 ? `
+                <path d="M ${cx - r1 * 0.55} ${cy1 + r1 * 0.45} Q 220 300 ${cx - r0 * 0.55} ${cy0 - r0 * 0.55}"
+                      fill="none" stroke="#f4a7b9" stroke-width="${arrowLeftWidth}" marker-end="url(#arrow-a-pink)" stroke-linecap="round" />
+                <g transform="translate(255, 300)">
+                    <rect x="-32" y="-13" width="64" height="26" rx="4" fill="#ffffff" stroke="#f4a7b9" stroke-width="1.2" filter="url(#shadow-a)" />
+                    <text x="0" y="5" text-anchor="middle" font-size="15" font-weight="bold" fill="#0f172a">${d.pct10.toFixed(1)}%</text>
+                </g>
+                ` : ''}
+
+                <!-- Corner Info Box: LA (Bottom-Left) -->
+                <g transform="translate(14, 520)">
+                    <rect x="0" y="0" width="105" height="62" rx="4" fill="#ffffff" stroke="#0f172a" stroke-width="1" />
+                    <text x="8" y="18" font-size="13" font-weight="bold" fill="#0f172a">${d.labelLow}</text>
+                    <text x="8" y="36" font-size="12" fill="#334155">Public: ${d.pubLow}</text>
+                    <text x="8" y="52" font-size="12" fill="#334155">Private: ${d.privLow}</text>
+                </g>
+
+                <!-- Corner Info Box: HA (Top-Right) -->
+                <g transform="translate(480, 48)">
+                    <rect x="0" y="0" width="105" height="62" rx="4" fill="#ffffff" stroke="#0f172a" stroke-width="1" />
+                    <text x="8" y="18" font-size="13" font-weight="bold" fill="#0f172a">${d.labelHigh}</text>
+                    <text x="8" y="36" font-size="12" fill="#334155">Public: ${d.pubHigh}</text>
+                    <text x="8" y="52" font-size="12" fill="#334155">Private: ${d.privHigh}</text>
+                </g>
+            </svg>
+            `;
+        }
+
+        // SVG Builder: Categorical HNS
+        function buildHNSSVG(d) {
+            const cx = 300, cy = 320;
+            const R = 230;
+
+            const rH = Math.max(26, Math.sqrt(d.pcts['H,H'] / 100) * 62);
+            const rS = Math.max(26, Math.sqrt(d.pcts['S,S'] / 100) * 62);
+            const rN = Math.max(26, Math.sqrt(d.pcts['N,N'] / 100) * 62);
+
+            // Node Centers: H (Top-Right), S (Top-Left), N (Bottom)
+            const nodeH = { x: 435, y: 240 };
+            const nodeS = { x: 165, y: 240 };
+            const nodeN = { x: 300, y: 460 };
+
+            // Polar Sector Coordinates for 120-degree divisions:
+            // 90 deg (Top), 210 deg (Bottom-Left), 330 deg (Bottom-Right)
+            const pTop = { x: cx, y: cy - R };
+            const pBotLeft = { x: cx - R * Math.sin(Math.PI / 3), y: cy + R * Math.cos(Math.PI / 3) };
+            const pBotRight = { x: cx + R * Math.sin(Math.PI / 3), y: cy + R * Math.cos(Math.PI / 3) };
+
+            return `
+            <svg viewBox="0 0 600 600" class="w-full h-auto max-w-[560px] select-none text-slate-800 font-sans" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <marker id="arrow-hns-green" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                        <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#2ca02c" />
+                    </marker>
+                    <marker id="arrow-hns-red" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                        <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#d62728" />
+                    </marker>
+                    <marker id="arrow-hns-grey" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                        <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#7f7f7f" />
+                    </marker>
+                    <filter id="shadow-hns" x="-10%" y="-10%" width="120%" height="120%">
+                        <feDropShadow dx="0" dy="1" stdDeviation="1.5" flood-opacity="0.12"/>
+                    </filter>
+                </defs>
+
+                <!-- Border Box -->
+                <rect x="2" y="2" width="596" height="596" fill="#ffffff" stroke="#0f172a" stroke-width="1.2" />
+
+                <!-- Title -->
+                <text x="300" y="28" text-anchor="middle" font-size="18" font-weight="600" fill="#0f172a">
+                    Emotional flow diagram: from Public to Private
+                </text>
+
+                <!-- Legend Top-Right -->
+                <g transform="translate(380, 42)">
+                    <line x1="0" y1="8" x2="32" y2="8" stroke="#7f7f7f" stroke-width="3" />
+                    <text x="40" y="12" font-size="13" font-weight="500" fill="#0f172a">Arrow: Changing flow</text>
+                    <circle cx="16" cy="28" r="9" fill="#7f7f7f" />
+                    <text x="40" y="32" font-size="13" font-weight="500" fill="#0f172a">Circle: % of stability</text>
+                </g>
+
+                <!-- 3 Sector Wedges -->
+                <!-- Happiness Sector (Top-Right): from 90 deg to 330 deg through 0 deg -->
+                <path d="M ${cx} ${cy} L ${pTop.x} ${pTop.y} A ${R} ${R} 0 0 1 ${pBotRight.x} ${pBotRight.y} Z"
+                      fill="#2ca02c" fill-opacity="0.12" stroke="#2ca02c" stroke-width="0.5" />
+                
+                <!-- Sadness Sector (Top-Left): from 210 deg to 90 deg through 180 deg -->
+                <path d="M ${cx} ${cy} L ${pBotLeft.x} ${pBotLeft.y} A ${R} ${R} 0 0 1 ${pTop.x} ${pTop.y} Z"
+                      fill="#d62728" fill-opacity="0.09" stroke="#d62728" stroke-width="0.5" />
+
+                <!-- Neutral Sector (Bottom): from 330 deg to 210 deg through 270 deg -->
+                <path d="M ${cx} ${cy} L ${pBotRight.x} ${pBotRight.y} A ${R} ${R} 0 0 1 ${pBotLeft.x} ${pBotLeft.y} Z"
+                      fill="#7f7f7f" fill-opacity="0.09" stroke="#7f7f7f" stroke-width="0.5" />
+
+                <!-- Sector Dividing Radial Lines -->
+                <line x1="${cx}" y1="${cy}" x2="${pTop.x}" y2="${pTop.y}" stroke="#cbd5e1" stroke-width="1.5" />
+                <line x1="${cx}" y1="${cy}" x2="${pBotLeft.x}" y2="${pBotLeft.y}" stroke="#cbd5e1" stroke-width="1.5" />
+                <line x1="${cx}" y1="${cy}" x2="${pBotRight.x}" y2="${pBotRight.y}" stroke="#cbd5e1" stroke-width="1.5" />
+
+                <!-- Outer Boundary Circle -->
+                <circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="#0f172a" stroke-width="2" />
+
+                <!-- Sector Outer Labels -->
+                <text x="430" y="105" font-size="24" font-weight="900" fill="#1b8e2d">H</text>
+                <text x="45" y="325" font-size="24" font-weight="900" fill="#d62728">S</text>
+                <text x="430" y="555" font-size="24" font-weight="900" fill="#7f7f7f">N</text>
+
+                <!-- Directed Curved Arrows between Circles -->
+                <!-- 1. H -> S (Green, curving upper) -->
+                <path d="M ${nodeH.x - rH * 0.8} ${nodeH.y - 12} Q 300 210 ${nodeS.x + rS * 0.8} ${nodeS.y - 12}"
+                      fill="none" stroke="#2ca02c" stroke-width="${Math.max(1.8, (d.trans['H,S']/d.n)*20)}" marker-end="url(#arrow-hns-green)" stroke-linecap="round" />
+                <g transform="translate(290, 212)">
+                    <rect x="-18" y="-10" width="36" height="20" rx="3" fill="#2ca02c" filter="url(#shadow-hns)" />
+                    <text x="0" y="4" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">${Math.round(d.pcts['H,S'])}%</text>
+                </g>
+
+                <!-- 2. S -> H (Red, curving lower) -->
+                <path d="M ${nodeS.x + rS * 0.8} ${nodeS.y + 12} Q 300 248 ${nodeH.x - rH * 0.8} ${nodeH.y + 12}"
+                      fill="none" stroke="#d62728" stroke-width="${Math.max(1.8, (d.trans['S,H']/d.n)*20)}" marker-end="url(#arrow-hns-red)" stroke-linecap="round" />
+                <g transform="translate(310, 248)">
+                    <rect x="-18" y="-10" width="36" height="20" rx="3" fill="#d62728" filter="url(#shadow-hns)" />
+                    <text x="0" y="4" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">${Math.round(d.pcts['S,H'])}%</text>
+                </g>
+
+                <!-- 3. H -> N (Green, curving inward left of H-N axis) -->
+                <path d="M ${nodeH.x - 15} ${nodeH.y + rH * 0.8} Q 345 350 ${nodeN.x + 10} ${nodeN.y - rN * 0.8}"
+                      fill="none" stroke="#2ca02c" stroke-width="${Math.max(1.8, (d.trans['H,N']/d.n)*20)}" marker-end="url(#arrow-hns-green)" stroke-linecap="round" />
+                <g transform="translate(345, 350)">
+                    <rect x="-18" y="-10" width="36" height="20" rx="3" fill="#2ca02c" filter="url(#shadow-hns)" />
+                    <text x="0" y="4" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">${Math.round(d.pcts['H,N'])}%</text>
+                </g>
+
+                <!-- 4. N -> H (Grey, curving outward right of H-N axis) -->
+                <path d="M ${nodeN.x + 22} ${nodeN.y - rN * 0.75} Q 395 365 ${nodeH.x + 5} ${nodeH.y + rH * 0.8}"
+                      fill="none" stroke="#7f7f7f" stroke-width="${Math.max(1.8, (d.trans['N,H']/d.n)*20)}" marker-end="url(#arrow-hns-grey)" stroke-linecap="round" />
+                <g transform="translate(390, 365)">
+                    <rect x="-18" y="-10" width="36" height="20" rx="3" fill="#7f7f7f" filter="url(#shadow-hns)" />
+                    <text x="0" y="4" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">${Math.round(d.pcts['N,H'])}%</text>
+                </g>
+
+                <!-- 5. S -> N (Red, curving inward right of S-N axis) -->
+                <path d="M ${nodeS.x + 15} ${nodeS.y + rS * 0.8} Q 255 350 ${nodeN.x - 10} ${nodeN.y - rN * 0.8}"
+                      fill="none" stroke="#d62728" stroke-width="${Math.max(1.8, (d.trans['S,N']/d.n)*20)}" marker-end="url(#arrow-hns-red)" stroke-linecap="round" />
+                <g transform="translate(255, 350)">
+                    <rect x="-18" y="-10" width="36" height="20" rx="3" fill="#d62728" filter="url(#shadow-hns)" />
+                    <text x="0" y="4" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">${Math.round(d.pcts['S,N'])}%</text>
+                </g>
+
+                <!-- 6. N -> S (Grey, curving outward left of S-N axis) -->
+                <path d="M ${nodeN.x - 22} ${nodeN.y - rN * 0.75} Q 205 365 ${nodeS.x - 5} ${nodeS.y + rS * 0.8}"
+                      fill="none" stroke="#7f7f7f" stroke-width="${Math.max(1.8, (d.trans['N,S']/d.n)*20)}" marker-end="url(#arrow-hns-grey)" stroke-linecap="round" />
+                <g transform="translate(210, 365)">
+                    <rect x="-18" y="-10" width="36" height="20" rx="3" fill="#7f7f7f" filter="url(#shadow-hns)" />
+                    <text x="0" y="4" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">${Math.round(d.pcts['N,S'])}%</text>
+                </g>
+
+                <!-- Happiness Stability Circle -->
+                <circle cx="${nodeH.x}" cy="${nodeH.y}" r="${rH}" fill="#1b8e2d" stroke="#ffffff" stroke-width="2.5" filter="url(#shadow-hns)" />
+                <text x="${nodeH.x}" y="${nodeH.y + 6}" text-anchor="middle" font-size="${Math.max(14, rH*0.4)}" font-weight="bold" fill="#ffffff">
+                    ${Math.round(d.pcts['H,H'])}%
+                </text>
+
+                <!-- Sadness Stability Circle -->
+                <circle cx="${nodeS.x}" cy="${nodeS.y}" r="${rS}" fill="#d62728" stroke="#ffffff" stroke-width="2.5" filter="url(#shadow-hns)" />
+                <text x="${nodeS.x}" y="${nodeS.y + 6}" text-anchor="middle" font-size="${Math.max(14, rS*0.4)}" font-weight="bold" fill="#ffffff">
+                    ${Math.round(d.pcts['S,S'])}%
+                </text>
+
+                <!-- Neutral Stability Circle -->
+                <circle cx="${nodeN.x}" cy="${nodeN.y}" r="${rN}" fill="#7f7f7f" stroke="#ffffff" stroke-width="2.5" filter="url(#shadow-hns)" />
+                <text x="${nodeN.x}" y="${nodeN.y + 6}" text-anchor="middle" font-size="${Math.max(14, rN*0.4)}" font-weight="bold" fill="#ffffff">
+                    ${Math.round(d.pcts['N,N'])}%
+                </text>
+            </svg>
+            `;
+        }
+
+        // Event Listeners for Transitions
+        diagramTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                transState.currentDiagram = tab.dataset.diagram;
+                updateTransitionsUI();
+            });
+        });
+
+        transThreshSlider.addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value);
+            transThreshDisplay.textContent = val.toFixed(2);
+            const cur = transState.currentDiagram;
+            transState.thresholds[cur].pub = val;
+            transState.thresholds[cur].priv = val;
+            renderTransitions();
+        });
+
+        transPubSlider.addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value);
+            transPubDisplay.textContent = val.toFixed(2);
+            transState.thresholds[transState.currentDiagram].pub = val;
+            renderTransitions();
+        });
+
+        transPrivSlider.addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value);
+            transPrivDisplay.textContent = val.toFixed(2);
+            transState.thresholds[transState.currentDiagram].priv = val;
+            renderTransitions();
+        });
+
+        transSplitToggle.addEventListener('change', (e) => {
+            const isSplit = e.target.checked;
+            transState.thresholds[transState.currentDiagram].split = isSplit;
+            updateTransitionsUI();
+        });
+
+        transDeltaSlider.addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value);
+            transDeltaDisplay.textContent = val.toFixed(1);
+            transState.thresholds.graz_hns.delta = val;
+            renderTransitions();
+        });
+
+        btnSeqMode.addEventListener('click', () => {
+            transState.thresholds.graz_hns.pairing = 'seq';
+            updateTransitionsUI();
+        });
+
+        btnImageMode.addEventListener('click', () => {
+            transState.thresholds.graz_hns.pairing = 'image';
+            updateTransitionsUI();
+        });
+
+        btnPaperPreset.addEventListener('click', () => {
+            const cur = transState.currentDiagram;
+            const defTh = getDiagramConfig(cur).defaultTh;
+            transState.thresholds[cur].pub = defTh;
+            transState.thresholds[cur].priv = defTh;
+            transState.thresholds[cur].split = false;
+            updateTransitionsUI();
+        });
+
+        btnMidpointPreset.addEventListener('click', () => {
+            const cur = transState.currentDiagram;
+            transState.thresholds[cur].pub = 5.0;
+            transState.thresholds[cur].priv = 5.0;
+            updateTransitionsUI();
+        });
+
+        btnHnsPaperPreset.addEventListener('click', () => {
+            transState.thresholds.graz_hns.delta = 1.0;
+            transState.thresholds.graz_hns.pairing = 'seq';
+            updateTransitionsUI();
+        });
+
+        btnExportSvg.addEventListener('click', () => {
+            const svgElem = diagramSvgContainer.querySelector('svg');
+            if (!svgElem) return;
+            const svgData = new XMLSerializer().serializeToString(svgElem);
+            const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${transState.currentDiagram}_transition_flow.svg`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+
+        // Initialize transitions UI on page load
+        updateTransitionsUI();
 
     </script>
 </body>
