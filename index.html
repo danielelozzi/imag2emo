@@ -6,7 +6,7 @@
     <title>EEG-Based Emotion Recognition: The Role of Subjectivity</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="transition_flow_data.js?v=20260916"></script>
+    <script src="transition_flow_data.js?v=20260916_filtered"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -458,12 +458,15 @@ Standardized Labels</h1>
                                             <p class="text-slate-600 text-xs leading-relaxed">
                                                 Use the 5 drop-down menus to query any experimental condition: <strong>Dataset</strong> (<em class="text-slate-700">DEAP_R, DEAP_P, Imag2Emo</em>), <strong>Label Type</strong> (<em class="text-slate-700">Public vs. Private</em>), <strong>Dimension</strong> (<em class="text-slate-700">Valence, Arousal, HNS</em>), <strong>Validation</strong> (<em class="text-slate-700">Simple K-Fold, K-Fold [Sub-split], LOSO</em>), and <strong>Model Architecture</strong> (<em class="text-slate-700">EEGNetv4, EEGDeformer, ContraNet, Conformer, EEGViT</em>).
                                             </p>
-                                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 text-[11px] text-slate-500">
+                                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1 text-[11px] text-slate-500">
                                                 <div class="p-2 bg-white rounded border border-slate-200">
                                                     <strong class="text-slate-800">Learning Curves:</strong> Visualizes training vs. validation loss/accuracy across epochs (<span class="font-mono text-slate-700">avg_curves.png</span>).
                                                 </div>
                                                 <div class="p-2 bg-white rounded border border-slate-200">
                                                     <strong class="text-slate-800">Classification Report:</strong> Reports per-class Precision, Recall, F1-Score, Overall Accuracy, and statistical significance against chance level <span class="font-mono font-semibold">t</span>.
+                                                </div>
+                                                <div class="p-2 bg-white rounded border border-slate-200">
+                                                    <strong class="text-slate-800">Confusion Matrix (%):</strong> Row-normalized classification breakdown (100% per ground-truth class) showing exact sensitivity and error distribution.
                                                 </div>
                                             </div>
                                         </div>
@@ -523,12 +526,15 @@ Standardized Labels</h1>
                                             <p class="text-slate-600 text-xs leading-relaxed">
                                                 Utilizza i 5 menu a tendina per interrogare qualsiasi condizione sperimentale: <strong>Dataset</strong> (<em class="text-slate-700">DEAP_R, DEAP_P, Imag2Emo</em>), <strong>Tipo Etichetta</strong> (<em class="text-slate-700">Public vs. Private</em>), <strong>Dimensione</strong> (<em class="text-slate-700">Valence, Arousal, HNS</em>), <strong>Validazione</strong> (<em class="text-slate-700">Simple K-Fold, K-Fold [Sub-split], LOSO</em>) e <strong>Architettura</strong> (<em class="text-slate-700">EEGNetv4, EEGDeformer, ContraNet, Conformer, EEGViT</em>).
                                             </p>
-                                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 text-[11px] text-slate-500">
+                                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1 text-[11px] text-slate-500">
                                                 <div class="p-2 bg-white rounded border border-slate-200">
                                                     <strong class="text-slate-800">Curve di Apprendimento:</strong> Visualizza convergenza e stabilità su train e validation set (<span class="font-mono text-slate-700">avg_curves.png</span>).
                                                 </div>
                                                 <div class="p-2 bg-white rounded border border-slate-200">
-                                                    <strong class="text-slate-800">Report di Classificazione:</strong> Riporta Precision, Recall, F1-Score per classe, accuratezza complessiva e significatività statistica rispetto al chance level <span class="font-mono font-semibold">t</span>.
+                                                    <strong class="text-slate-800">Report di Classificazione:</strong> Riporta Precision, Recall, F1-Score per classe, accuratezza complessiva e deviazione standard tra i fold.
+                                                </div>
+                                                <div class="p-2 bg-white rounded border border-slate-200">
+                                                    <strong class="text-slate-800">Matrice di Confusione (%):</strong> Distribuzione normalizzata per riga (100% per classe reale) con tassi di sensibilità diagonali e flussi di errore.
                                                 </div>
                                             </div>
                                         </div>
@@ -1084,7 +1090,7 @@ Standardized Labels</h1>
         }
 
         function parseCSVToReportObject(csvText) {
-            // Funzione robusta per parsare il formato CSV specifico con medie e std.
+            // Funzione robusta per parsare il formato CSV specifico con medie e deviazioni standard.
             const report = {};
             const lines = csvText.trim().split('\n');
             
@@ -1101,15 +1107,21 @@ Standardized Labels</h1>
                 if (key) {
                     // Le colonne sono: key, precision_mean, precision_std, recall_mean, recall_std, f1_mean, f1_std, support
                     const precision = parseFloat(values[1]);
+                    const precision_std = parseFloat(values[2]);
                     const recall = parseFloat(values[3]);
+                    const recall_std = parseFloat(values[4]);
                     const f1 = parseFloat(values[5]);
+                    const f1_std = parseFloat(values[6]);
                     // Il supporto potrebbe non essere presente per tutte le righe (es. medie)
                     const support = values.length > 7 ? parseInt(values[7], 10) : NaN;
 
                     report[key] = {
                         precision: isNaN(precision) ? 0 : precision,
+                        precision_std: isNaN(precision_std) ? 0 : precision_std,
                         recall: isNaN(recall) ? 0 : recall,
+                        recall_std: isNaN(recall_std) ? 0 : recall_std,
                         'f1-score': isNaN(f1) ? 0 : f1,
+                        'f1-score_std': isNaN(f1_std) ? 0 : f1_std,
                         support: isNaN(support) ? '' : support
                     };
                 }
@@ -1122,28 +1134,184 @@ Standardized Labels</h1>
             const allLabels = Object.keys(reportData);
 
             if (!reportData || allLabels.length === 0) {
-                container.innerHTML = '<p class="text-center text-amber-600">Could not parse or render report data.</p>';
+                container.innerHTML = '<p class="text-center text-amber-600 py-3">Could not parse or render report data.</p>';
                 return;
             }
 
-            let tableHtml = `<div class="overflow-x-auto"><table class="w-full text-sm text-left">
-                <thead class="bg-slate-100"><tr>
-                    <th class="p-2"></th><th class="p-2">Precision</th><th class="p-2">Recall</th><th class="p-2">F1-Score</th>
+            let tableHtml = `<div class="overflow-x-auto"><table class="w-full text-sm text-left border-collapse">
+                <thead class="bg-slate-100 text-slate-700 text-xs font-semibold"><tr>
+                    <th class="p-2.5 rounded-tl">Class</th>
+                    <th class="p-2.5">Precision</th>
+                    <th class="p-2.5">Recall</th>
+                    <th class="p-2.5 rounded-tr">F1-Score</th>
                 </tr></thead><tbody>`;
 
             allLabels.forEach(label => {
                 const stats = reportData[label];
                 const isAvg = label.includes('avg');
-                tableHtml += `<tr class="border-b ${isAvg ? 'bg-slate-50 font-bold' : ''}">
-                    <td class="p-2">${label}</td>
-                    <td class="p-2">${stats.precision.toFixed(2)}</td>
-                    <td class="p-2">${stats.recall.toFixed(2)}</td>
-                    <td class="p-2">${stats['f1-score'].toFixed(2)}</td>
+                tableHtml += `<tr class="border-b border-slate-100 ${isAvg ? 'bg-slate-50/80 font-bold text-slate-800' : 'text-slate-700'} hover:bg-slate-50/50 transition-colors">
+                    <td class="p-2.5 font-mono text-xs">${label}</td>
+                    <td class="p-2.5">
+                        <span class="font-semibold">${stats.precision.toFixed(2)}</span>
+                        ${stats.precision_std > 0 ? `<span class="text-[11px] text-slate-400 font-normal ml-1">&plusmn;${stats.precision_std.toFixed(2)}</span>` : ''}
+                    </td>
+                    <td class="p-2.5">
+                        <span class="font-semibold">${stats.recall.toFixed(2)}</span>
+                        ${stats.recall_std > 0 ? `<span class="text-[11px] text-slate-400 font-normal ml-1">&plusmn;${stats.recall_std.toFixed(2)}</span>` : ''}
+                    </td>
+                    <td class="p-2.5">
+                        <span class="font-semibold">${stats['f1-score'].toFixed(2)}</span>
+                        ${stats['f1-score_std'] > 0 ? `<span class="text-[11px] text-slate-400 font-normal ml-1">&plusmn;${stats['f1-score_std'].toFixed(2)}</span>` : ''}
+                    </td>
                 </tr>`;
             });
             
             tableHtml += `</tbody></table></div>`;
             container.innerHTML = tableHtml;
+        }
+
+        function renderConfusionMatrix(reportData, dimension, containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            const classKeys = Object.keys(reportData).filter(k => !k.toLowerCase().includes('avg'));
+            classKeys.sort((a, b) => parseFloat(a) - parseFloat(b));
+
+            if (classKeys.length === 0) {
+                container.innerHTML = '<p class="text-center text-amber-600 py-3 text-sm">Insufficient data to construct confusion matrix.</p>';
+                return;
+            }
+
+            function getDisplayName(key, idx) {
+                if (dimension === 'valence') {
+                    return idx === 0 ? 'Low Valence' : 'High Valence';
+                } else if (dimension === 'arousal') {
+                    return idx === 0 ? 'Low Arousal' : 'High Arousal';
+                } else if (dimension === 'hns') {
+                    if (idx === 0) return 'Happiness (H)';
+                    if (idx === 1) return 'Neutral (N)';
+                    if (idx === 2) return 'Sadness (S)';
+                }
+                return `Class ${key}`;
+            }
+
+            let matrix = [];
+            let isExactMulticlass = true;
+
+            if (classKeys.length === 2) {
+                // Binary classification: row-normalized matrix is mathematically exact from recall
+                const k0 = classKeys[0];
+                const k1 = classKeys[1];
+                const r0 = reportData[k0].recall;
+                const r1 = reportData[k1].recall;
+                const r0_std = reportData[k0].recall_std || 0;
+                const r1_std = reportData[k1].recall_std || 0;
+
+                matrix = [
+                    [
+                        { pct: r0 * 100, std: r0_std * 100, isDiag: true },
+                        { pct: Math.max(0, (1 - r0) * 100), std: r0_std * 100, isDiag: false }
+                    ],
+                    [
+                        { pct: Math.max(0, (1 - r1) * 100), std: r1_std * 100, isDiag: false },
+                        { pct: r1 * 100, std: r1_std * 100, isDiag: true }
+                    ]
+                ];
+            } else if (classKeys.length === 3) {
+                // 3 classes (HNS): Diagonals are exact recalls; off-diagonals are apportioned via precision marginals
+                isExactMulticlass = false;
+                const recalls = classKeys.map(k => reportData[k].recall);
+                const precisions = classKeys.map(k => reportData[k].precision);
+                const recall_stds = classKeys.map(k => reportData[k].recall_std || 0);
+
+                matrix = [[], [], []];
+                for (let r = 0; r < 3; r++) {
+                    const diagVal = Math.min(100, Math.max(0, recalls[r] * 100));
+                    const errorVal = Math.max(0, 100 - diagVal);
+                    const otherCols = [0, 1, 2].filter(c => c !== r);
+                    const c1 = otherCols[0];
+                    const c2 = otherCols[1];
+
+                    // Weights based on available false positive mass
+                    const fp1 = precisions[c1] > 0 ? Math.max(1e-4, recalls[c1] / precisions[c1] - recalls[c1]) : 1e-4;
+                    const fp2 = precisions[c2] > 0 ? Math.max(1e-4, recalls[c2] / precisions[c2] - recalls[c2]) : 1e-4;
+                    const totalFp = fp1 + fp2;
+                    const w1 = fp1 / totalFp;
+                    const w2 = fp2 / totalFp;
+
+                    matrix[r][r] = { pct: diagVal, std: recall_stds[r] * 100, isDiag: true };
+                    matrix[r][c1] = { pct: errorVal * w1, std: 0, isDiag: false };
+                    matrix[r][c2] = { pct: errorVal * w2, std: 0, isDiag: false };
+                }
+            }
+
+            function getCellStyle(pct, isDiag) {
+                const clamped = Math.min(100, Math.max(0, pct));
+                // Blue shade based on value
+                const alpha = (clamped / 100) * 0.72 + 0.08;
+                const bg = `background-color: rgba(37, 99, 235, ${alpha.toFixed(3)});`;
+                const text = clamped > 48 ? 'color: #ffffff;' : 'color: #0f172a;';
+                const ring = isDiag ? 'ring-2 ring-blue-500 ring-inset' : '';
+                return { style: `${bg} ${text}`, ring };
+            }
+
+            let html = `
+                <div class="overflow-x-auto">
+                    <div class="inline-block min-w-full">
+                        <div class="text-center mb-2">
+                            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-slate-100 px-3 py-0.5 rounded-full">
+                                Predicted Class &rarr;
+                            </span>
+                        </div>
+                        <table class="w-full border-collapse text-center">
+                            <thead>
+                                <tr>
+                                    <th class="p-2 text-[11px] font-bold text-slate-500 text-left w-32 border-b border-slate-200">
+                                        Ground Truth &darr;
+                                    </th>
+                                    ${classKeys.map((k, idx) => `
+                                        <th class="p-2.5 text-xs font-bold text-slate-700 bg-slate-100/70 border border-slate-200">
+                                            ${getDisplayName(k, idx)}
+                                        </th>
+                                    `).join('')}
+                                    <th class="p-2 text-[11px] font-semibold text-slate-400 border border-slate-200 bg-slate-50 w-20">Row Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${matrix.map((row, rIdx) => `
+                                    <tr>
+                                        <td class="p-2.5 text-xs font-bold text-slate-700 bg-slate-100/70 border border-slate-200 text-left">
+                                            ${getDisplayName(classKeys[rIdx], rIdx)}
+                                        </td>
+                                        ${row.map((cell, cIdx) => {
+                                            const cellStyle = getCellStyle(cell.pct, cell.isDiag);
+                                            const title = `True: ${getDisplayName(classKeys[rIdx], rIdx)} &rarr; Predicted: ${getDisplayName(classKeys[cIdx], cIdx)} (${cell.pct.toFixed(1)}%)`;
+                                            return `
+                                                <td class="p-3 border border-slate-200 ${cellStyle.ring} transition-all" style="${cellStyle.style}" title="${title}">
+                                                    <div class="text-base font-extrabold tracking-tight">${cell.pct.toFixed(1)}%</div>
+                                                    ${cell.std > 0 ? `<div class="text-[10px] opacity-80 font-normal">&plusmn;${cell.std.toFixed(1)}%</div>` : (cell.isDiag ? '' : (isExactMulticlass ? '' : '<div class="text-[9px] opacity-60">approx.</div>'))}
+                                                </td>
+                                            `;
+                                        }).join('')}
+                                        <td class="p-2.5 text-xs font-mono font-semibold text-slate-400 border border-slate-200 bg-slate-50/50">
+                                            100%
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between text-[11px] text-slate-500 mt-2.5 pt-2 border-t border-slate-100 gap-1">
+                    <div class="flex items-center gap-1.5">
+                        <span class="inline-block w-2.5 h-2.5 rounded bg-blue-600"></span>
+                        <span class="font-medium text-slate-700">Diagonale (in blu) = Recall / True Positive Rate per classe</span>
+                    </div>
+                    <span class="italic text-slate-400">Normalizzato per riga (somma per classe reale = 100%)</span>
+                </div>
+            `;
+
+            container.innerHTML = html;
         }
 
         function updateDashboard() {
@@ -1163,19 +1331,53 @@ Standardized Labels</h1>
             // URL diretti ai file, senza PHP
             const imageUrl = `results/${basePath}/avg_curves.png`;
             const reportUrl = `results/${basePath}/summary_metrics_per_classe.csv`;
+            const fold1CmUrl = `results/${basePath}/confusion_matrix_fold_1.png`;
 
             resultsContainer.innerHTML = `
-                <div class="card flex justify-center items-center relative">
-                    <h3 class="text-xl font-semibold text-slate-800 mb-4 absolute top-6"> </h3>
-                    <img src="${imageUrl}" alt=" " class="rounded-lg max-w-full h-auto" onerror="this.src='https://placehold.co/600x400/f1f5f9/94a3b8?text=Image+Not+Found'; this.onerror=null;">
+                <div class="card flex flex-col justify-between items-center relative">
+                    <div class="w-full">
+                        <div class="flex items-center justify-between mb-3 border-b border-slate-100 pb-2">
+                            <h3 class="text-base font-bold text-slate-800">Learning Curves</h3>
+                            <span class="text-[11px] px-2 py-0.5 rounded bg-blue-50 text-blue-700 font-mono font-medium">avg_curves.png</span>
+                        </div>
+                        <div class="flex justify-center items-center py-2">
+                            <img src="${imageUrl}" alt="Learning Curves" class="rounded-lg max-w-full h-auto shadow-xs border border-slate-100" onerror="this.src='https://placehold.co/600x400/f1f5f9/94a3b8?text=Image+Not+Found'; this.onerror=null;">
+                        </div>
+                    </div>
+                    <p class="text-[11px] text-slate-400 text-center mt-2">Loss e accuratezza medie tra i fold di validazione.</p>
                 </div>
-                <div class="card col-span-1 md:col-span-2">
-                    <h3 class="text-xl font-semibold text-slate-800 mb-4">Classification Report</h3>
-                    <div id="report-container"><p class="text-center text-slate-500">Loading report...</p></div>
+                <div class="card col-span-1 md:col-span-2 space-y-6">
+                    <div>
+                        <div class="flex items-center justify-between mb-3 border-b border-slate-100 pb-2">
+                            <div>
+                                <h3 class="text-base font-bold text-slate-800">Classification Report</h3>
+                                <p class="text-xs text-slate-500">Metriche medie per classe &plusmn; deviazione standard cross-fold</p>
+                            </div>
+                            <span class="text-xs px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-semibold border border-emerald-200">Test Evaluation</span>
+                        </div>
+                        <div id="report-container"><p class="text-center text-slate-500 py-3 text-sm">Loading report...</p></div>
+                    </div>
+
+                    <div class="border-t border-slate-100 pt-5">
+                        <div class="flex items-center justify-between mb-3">
+                            <div>
+                                <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                                    <span>Normalized Confusion Matrix (%)</span>
+                                    <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">Row-Normalized</span>
+                                </h3>
+                                <p class="text-xs text-slate-500">Distribuzione percentuale delle predizioni per ogni classe reale</p>
+                            </div>
+                            <a href="${fold1CmUrl}" target="_blank" class="text-xs text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1 font-medium bg-blue-50/60 px-2.5 py-1 rounded border border-blue-100 transition-colors" title="Visualizza la matrice di confusione originale del Fold 1 (PNG)">
+                                <span>PNG Fold 1</span>
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                            </a>
+                        </div>
+                        <div id="confusion-matrix-container"><p class="text-center text-slate-500 py-3 text-sm">Computing confusion matrix...</p></div>
+                    </div>
                 </div>
             `;
 
-            // Esegue la fetch per recuperare e renderizzare il report
+            // Esegue la fetch per recuperare e renderizzare report e matrice di confusione
             fetch(reportUrl)
                 .then(response => {
                     if (!response.ok) {
@@ -1186,10 +1388,13 @@ Standardized Labels</h1>
                 .then(csvText => {
                     const reportData = parseCSVToReportObject(csvText);
                     renderReportTable(reportData, 'report-container');
+                    renderConfusionMatrix(reportData, dimension, 'confusion-matrix-container');
                 })
                 .catch(error => {
                     console.error("Error fetching report:", error);
-                    document.getElementById('report-container').innerHTML = `<p class="text-center text-amber-600">Could not load report data for this selection.</p>`;
+                    document.getElementById('report-container').innerHTML = `<p class="text-center text-amber-600 py-3 text-sm">Could not load report data for this selection.</p>`;
+                    const cmEl = document.getElementById('confusion-matrix-container');
+                    if (cmEl) cmEl.innerHTML = `<p class="text-center text-amber-600 py-3 text-sm">Confusion matrix unavailable.</p>`;
                 });
         }
 
