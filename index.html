@@ -72,19 +72,473 @@
 
         <!-- Home Section -->
         <section id="home" class="text-center mb-24">
-            <div class="max-w-4xl mx-auto">
+            <div class="max-w-5xl mx-auto">
+                <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 mb-4 shadow-sm">
+                    <span>IEEE Transaction / Journal Manuscript</span>
+                    <span>&bull;</span>
+                    <span>Affective Computing &amp; EEG</span>
+                </div>
                 <h1 class="text-4xl md:text-5xl font-extrabold text-slate-900 mb-4 leading-tight">EEG-Based Emotion Recognition Beyond
 Standardized Labels</h1>
-                <p class="text-lg text-slate-600 mb-6">An investigation into the neural correlates of visual emotional processing and the critical role of personalized labels in Affective Computing.</p>
+                <p class="text-lg text-slate-600 mb-6 max-w-3xl mx-auto leading-relaxed">An investigation into the neural correlates of visual emotional processing and the critical role of personalized labels in Affective Computing.</p>
                 <div class="mb-8">
-                    <p class="text-sm text-slate-800 font-semibold">Daniele Lozzi, Enrico Mattei, Roberta Ciuffini, Giuseppe Placidi</p>
-                    <p class="text-xs text-slate-500 mb-3">A2VI-Lab, Department of Life, Health and Environmental Sciences, University of L’Aquila, L’Aquila</p>
+                    <p class="text-sm text-slate-800 font-semibold">Daniele Lozzi *†, Enrico Mattei †, Roberta Ciuffini, Giuseppe Placidi</p>
+                    <p class="text-xs text-slate-500 mb-3">A2VI-Lab, Department of Life, Health and Environmental Sciences, University of L’Aquila, L’Aquila, Italy</p>
                     <p class="text-sm text-slate-800 font-semibold">Selina C. Wriessnegger</p>
                     <p class="text-xs text-slate-500">Institute of Neural Engineering, Graz University of Technology and BioTechMed-Graz, Graz, Austria</p>
+                    <p class="text-[11px] text-slate-400 mt-2 italic">* Corresponding author: daniele.lozzi@univaq.it &bull; † Equal contribution</p>
                 </div>
-                <div class="card">
-                     <h3 class="text-xl font-semibold text-slate-800 mb-3">Abstract</h3>
-                    <p class="text-left text-slate-600 leading-relaxed">This study investigates the Electroencephalogram (EEG) correlates of emotional responses to visual stimuli from the NAPS-BE and SFIP datasets. We found that Deep Learning (DL) models trained with the original dataset labels performed poorly. However, when the same models were trained using personalized labels from participants' own ratings, their accuracy in classifying emotional states improved dramatically. These findings underscore the highly subjective nature of emotional reactions and highlight the critical need for personalized data to advance EEG-based emotion recognition systems.</p>
+
+                <!-- Structured Research Overview Card -->
+                <div class="card text-left border border-slate-200/80 shadow-sm hover:shadow-md transition-all duration-200">
+                    
+                    <!-- Card Top Header: Title & Language Toggle -->
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-sm">
+                                &sect;
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-slate-900 tracking-tight" id="overview-title">Study Overview &amp; Guide</h3>
+                                <p class="text-xs text-slate-500" id="overview-subtitle">Synthesis of findings from Lozzi et al. &bull; University of L’Aquila &amp; TU Graz</p>
+                            </div>
+                        </div>
+
+                        <!-- Language Selector Toggle -->
+                        <div class="flex items-center gap-1.5 self-start sm:self-auto bg-slate-100 p-1 rounded-lg border border-slate-200 text-xs font-semibold">
+                            <span class="text-slate-400 px-1 text-[11px]">Lang:</span>
+                            <button type="button" id="lang-btn-en" class="px-2.5 py-1 rounded-md transition-all bg-white text-blue-700 shadow-xs font-bold" onclick="setOverviewLanguage('en')">
+                                EN
+                            </button>
+                            <button type="button" id="lang-btn-it" class="px-2.5 py-1 rounded-md transition-all text-slate-600 hover:text-slate-900 font-medium" onclick="setOverviewLanguage('it')">
+                                IT
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Navigation Tabs Bar -->
+                    <div class="flex flex-wrap gap-2 pt-4 pb-2 border-b border-slate-100" id="overview-tabs">
+                        <button type="button" class="overview-tab-btn flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs md:text-sm font-semibold transition-all bg-blue-50 text-blue-700 border border-blue-200 shadow-xs" data-target="tab-intro">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                            <span class="lang-en">1. Introduction</span>
+                            <span class="lang-it hidden">1. Introduzione</span>
+                        </button>
+                        <button type="button" class="overview-tab-btn flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs md:text-sm font-medium transition-all text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-transparent" data-target="tab-objectives">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <span class="lang-en">2. Objectives &amp; Contributions</span>
+                            <span class="lang-it hidden">2. Obiettivi e Contributi</span>
+                        </button>
+                        <button type="button" class="overview-tab-btn flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs md:text-sm font-medium transition-all text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-transparent" data-target="tab-conclusions">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                            <span class="lang-en">3. Key Conclusions</span>
+                            <span class="lang-it hidden">3. Conclusioni Chiave</span>
+                        </button>
+                        <button type="button" class="overview-tab-btn flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs md:text-sm font-medium transition-all text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-transparent" data-target="tab-guide">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path></svg>
+                            <span class="lang-en">4. How to Read Dashboard</span>
+                            <span class="lang-it hidden">4. Come Leggere la Dashboard</span>
+                        </button>
+                    </div>
+
+                    <!-- Tab Contents Container -->
+                    <div class="pt-6">
+
+                        <!-- TAB 1: INTRODUCTION -->
+                        <div id="tab-intro" class="overview-tab-content space-y-4">
+                            <!-- English Version -->
+                            <div class="lang-en space-y-4">
+                                <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
+                                    <h4 class="font-semibold text-slate-900 text-base mb-1.5 flex items-center gap-2">
+                                        <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+                                        The Promise and Pitfalls of EEG in Affective Computing
+                                    </h4>
+                                    <p class="text-slate-600 text-sm leading-relaxed">
+                                        Electroencephalography (EEG) has emerged as a premier non-invasive modality for emotion recognition, offering millisecond-level temporal resolution and direct access to cortical dynamics. However, reliable affective decoding has long been hindered by an overlooked reality: <span class="font-semibold text-slate-800">emotional experience is inherently subjective</span>. The exact same visual or auditory stimulus can evoke markedly different affective responses across individuals, and even within the same person across sessions, modulated by personality, fatigue, mood, and cognitive context.
+                                    </p>
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="bg-amber-50/70 rounded-lg p-4 border border-amber-200/80">
+                                        <h5 class="font-bold text-amber-900 text-sm mb-1">The "Public Labels" Bias</h5>
+                                        <p class="text-slate-600 text-xs leading-relaxed">
+                                            Most emotion recognition literature relies on <strong class="text-slate-800">standardized ("public") annotations</strong> assigned by external consensus or normative ratings (e.g., IAPS, NAPS-BE, or averaged group ratings in DEAP). This assumes universal affective responses, introducing severe label noise when training models against individual neural activations.
+                                        </p>
+                                    </div>
+                                    <div class="bg-rose-50/70 rounded-lg p-4 border border-rose-200/80">
+                                        <h5 class="font-bold text-rose-900 text-sm mb-1">Overlooked Methodological Artifacts</h5>
+                                        <p class="text-slate-600 text-xs leading-relaxed">
+                                            Many published studies report very high classification accuracy (&gt;80–90%). However, these numbers frequently stem from methodological flaws: <strong class="text-slate-800">data leakage</strong> (overlapping segments from the same trial shared across train and test sets) and <strong class="text-slate-800">arbitrary binarization thresholds</strong>, where high accuracy merely reflects majority-class guessing while true F1-scores collapse.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <p class="text-slate-600 text-sm leading-relaxed">
+                                    To overcome these limitations, this study presents a systematic investigation into emotional subjectivity by formally contrasting public consensus labels with self-reported private annotations, analyzing the neural fingerprint across multiple architectures and validation regimes, and introducing a novel experimental paradigm that decouples stimulation from evaluation.
+                                </p>
+                            </div>
+
+                            <!-- Italian Version -->
+                            <div class="lang-it hidden space-y-4">
+                                <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
+                                    <h4 class="font-semibold text-slate-900 text-base mb-1.5 flex items-center gap-2">
+                                        <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+                                        Potenzialità e Criticità dell'EEG nell'Affective Computing
+                                    </h4>
+                                    <p class="text-slate-600 text-sm leading-relaxed">
+                                        L'elettroencefalografia (EEG) rappresenta una modalità d'elezione a basso costo e non invasiva per il riconoscimento delle emozioni, offrendo una risoluzione temporale al millisecondo e un accesso diretto alle dinamiche corticali. Tuttavia, la decodifica affettiva è storicamente limitata da un aspetto cruciale: <span class="font-semibold text-slate-800">l'esperienza emozionale è intrinsecamente soggettiva</span>. Il medesimo stimolo visivo può suscitare risposte affettive radicalmente differenti tra individui diversi, o persino nello stesso soggetto in momenti distinti, in funzione di personalità, umore, affaticamento e contesto.
+                                    </p>
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="bg-amber-50/70 rounded-lg p-4 border border-amber-200/80">
+                                        <h5 class="font-bold text-amber-900 text-sm mb-1">Il Limite delle "Public Labels"</h5>
+                                        <p class="text-slate-600 text-xs leading-relaxed">
+                                            Gran parte della letteratura addestra modelli su <strong class="text-slate-800">etichette standardizzate ("pubbliche")</strong> definite dal consenso normativo di database di riferimento (es. IAPS, NAPS-BE o medie di gruppo in DEAP). Ciò presuppone un'omogeneità emotiva irrealistica, iniettando un elevato rumore di etichettatura rispetto ai pattern neurali individuali.
+                                        </p>
+                                    </div>
+                                    <div class="bg-rose-50/70 rounded-lg p-4 border border-rose-200/80">
+                                        <h5 class="font-bold text-rose-900 text-sm mb-1">Artefatti Metodologici nella Letteratura</h5>
+                                        <p class="text-slate-600 text-xs leading-relaxed">
+                                            Molti studi riportano accuratezze apparentemente elevate (&gt;80–90%), che tuttavia spesso mascherano errori metodologici: <strong class="text-slate-800">data leakage</strong> temporale (finestre dello stesso stimolo condivise tra train e test) e <strong class="text-slate-800">soglie arbitrarie di binarizzazione</strong>, in cui l'accuratezza grezza riflette solo lo sbilanciamento di classe (majority guessing) a fronte di F1-score casuali.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <p class="text-slate-600 text-sm leading-relaxed">
+                                    Per superare questi limiti, questo studio indaga sistematicamente la soggettività affettiva confrontando formalmente le etichette pubbliche con i rating privati dei partecipanti, valutando l'impronta neurale individuale su diverse architetture di Deep Learning e introducendo un paradigma originale che separa stimolazione e autovalutazione.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- TAB 2: OBJECTIVES & CONTRIBUTIONS -->
+                        <div id="tab-objectives" class="overview-tab-content hidden space-y-4">
+                            <!-- English Version -->
+                            <div class="lang-en space-y-3">
+                                <p class="text-slate-700 text-sm font-medium">
+                                    This research provides four principal scientific contributions to EEG-based affective computing:
+                                </p>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                                    <div class="p-3.5 rounded-lg border border-slate-200 bg-white hover:border-blue-300 transition-colors">
+                                        <div class="flex items-center gap-2 mb-1.5">
+                                            <span class="w-6 h-6 rounded-full bg-blue-100 text-blue-800 font-bold text-xs flex items-center justify-center">1</span>
+                                            <h5 class="font-bold text-slate-800 text-sm">Public vs. Private Label Formalization</h5>
+                                        </div>
+                                        <p class="text-slate-600 text-xs leading-relaxed">
+                                            Formal distinction between normative consensus ("public") and personalized self-reports ("private"). We quantify their large mismatch through SMAPE, transition matrices, and human concordance reports, uncovering a systematic <strong class="text-slate-800">positive bias</strong> (participants frequently reinterpret neutral or negative stimuli as positive/happy).
+                                        </p>
+                                    </div>
+
+                                    <div class="p-3.5 rounded-lg border border-slate-200 bg-white hover:border-blue-300 transition-colors">
+                                        <div class="flex items-center gap-2 mb-1.5">
+                                            <span class="w-6 h-6 rounded-full bg-blue-100 text-blue-800 font-bold text-xs flex items-center justify-center">2</span>
+                                            <h5 class="font-bold text-slate-800 text-sm">The Novel Imag2Emo Dataset</h5>
+                                        </div>
+                                        <p class="text-slate-600 text-xs leading-relaxed">
+                                            Introduction of a new EEG dataset acquired at TU Graz using a two-phase protocol: uninterrupted passive viewing during EEG recording followed by delayed offline ratings. This eliminates motor artifacts, cognitive distraction, and evaluation fatigue present in concurrent protocols such as DEAP.
+                                        </p>
+                                    </div>
+
+                                    <div class="p-3.5 rounded-lg border border-slate-200 bg-white hover:border-blue-300 transition-colors">
+                                        <div class="flex items-center gap-2 mb-1.5">
+                                            <span class="w-6 h-6 rounded-full bg-blue-100 text-blue-800 font-bold text-xs flex items-center justify-center">3</span>
+                                            <h5 class="font-bold text-slate-800 text-sm">Comprehensive Multi-Model Benchmark</h5>
+                                        </div>
+                                        <p class="text-slate-600 text-xs leading-relaxed">
+                                            Evaluation of 5 state-of-the-art architectures (<strong class="text-slate-800">EEGNetv4, EEGDeformer, ContraNet, Conformer, EEGViT</strong>) across 2 datasets (DEAP, Imag2Emo) and 3 validation strategies (<em class="text-slate-700">k-simple, k-fold, LOSO</em>), evaluated against a statistically calculated empirical chance threshold <span class="font-mono text-slate-800 font-semibold">t</span>.
+                                        </p>
+                                    </div>
+
+                                    <div class="p-3.5 rounded-lg border border-slate-200 bg-white hover:border-blue-300 transition-colors">
+                                        <div class="flex items-center gap-2 mb-1.5">
+                                            <span class="w-6 h-6 rounded-full bg-blue-100 text-blue-800 font-bold text-xs flex items-center justify-center">4</span>
+                                            <h5 class="font-bold text-slate-800 text-sm">Binarization Threshold Sensitivity</h5>
+                                        </div>
+                                        <p class="text-slate-600 text-xs leading-relaxed">
+                                            Empirical analysis demonstrating how the arbitrary selection of a binarization threshold (<span class="italic font-serif">t<sub>label</sub></span>) on continuous Valence/Arousal scales skews class balance, induces pseudo-learning artifacts, and fundamentally alters classification conclusions.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Italian Version -->
+                            <div class="lang-it hidden space-y-3">
+                                <p class="text-slate-700 text-sm font-medium">
+                                    Questa ricerca definisce quattro contributi scientifici principali all'Affective Computing basato su EEG:
+                                </p>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                                    <div class="p-3.5 rounded-lg border border-slate-200 bg-white hover:border-blue-300 transition-colors">
+                                        <div class="flex items-center gap-2 mb-1.5">
+                                            <span class="w-6 h-6 rounded-full bg-blue-100 text-blue-800 font-bold text-xs flex items-center justify-center">1</span>
+                                            <h5 class="font-bold text-slate-800 text-sm">Formalizzazione Public vs. Private Labels</h5>
+                                        </div>
+                                        <p class="text-slate-600 text-xs leading-relaxed">
+                                            Distinzione formale tra consenso normativo ("etichette pubbliche") e autovalutazioni personalizzate ("etichette private"). Il loro scostamento è quantificato tramite SMAPE, matrici di transizione e report umani, svelando un marcato <strong class="text-slate-800">positive bias</strong> (tendenza a reinterpretare stimoli neutri o tristi come felici).
+                                        </p>
+                                    </div>
+
+                                    <div class="p-3.5 rounded-lg border border-slate-200 bg-white hover:border-blue-300 transition-colors">
+                                        <div class="flex items-center gap-2 mb-1.5">
+                                            <span class="w-6 h-6 rounded-full bg-blue-100 text-blue-800 font-bold text-xs flex items-center justify-center">2</span>
+                                            <h5 class="font-bold text-slate-800 text-sm">Il Nuovo Dataset Imag2Emo</h5>
+                                        </div>
+                                        <p class="text-slate-600 text-xs leading-relaxed">
+                                            Acquisizione di un dataset originale presso la Graz University of Technology con paradigma a due fasi: visione passiva ininterrotta durante la registrazione EEG, seguita da rating differito offline. Questo approccio azzera artefatti motori, distrazione e fatica cognitiva presenti in DEAP.
+                                        </p>
+                                    </div>
+
+                                    <div class="p-3.5 rounded-lg border border-slate-200 bg-white hover:border-blue-300 transition-colors">
+                                        <div class="flex items-center gap-2 mb-1.5">
+                                            <span class="w-6 h-6 rounded-full bg-blue-100 text-blue-800 font-bold text-xs flex items-center justify-center">3</span>
+                                            <h5 class="font-bold text-slate-800 text-sm">Benchmark Rigoroso Multi-Modello</h5>
+                                        </div>
+                                        <p class="text-slate-600 text-xs leading-relaxed">
+                                            Valutazione di 5 architetture avanzate (<strong class="text-slate-800">EEGNetv4, EEGDeformer, ContraNet, Conformer, EEGViT</strong>) su 2 dataset (DEAP, Imag2Emo) e 3 schemi di validazione (<em class="text-slate-700">k-simple, k-fold, LOSO</em>), con metriche testate contro una soglia statistica di chance level <span class="font-mono text-slate-800 font-semibold">t</span>.
+                                        </p>
+                                    </div>
+
+                                    <div class="p-3.5 rounded-lg border border-slate-200 bg-white hover:border-blue-300 transition-colors">
+                                        <div class="flex items-center gap-2 mb-1.5">
+                                            <span class="w-6 h-6 rounded-full bg-blue-100 text-blue-800 font-bold text-xs flex items-center justify-center">4</span>
+                                            <h5 class="font-bold text-slate-800 text-sm">Sensibilità della Soglia di Binarizzazione</h5>
+                                        </div>
+                                        <p class="text-slate-600 text-xs leading-relaxed">
+                                            Analisi empirica che dimostra come la scelta arbitraria di una soglia di binarizzazione (<span class="italic font-serif">t<sub>label</sub></span>) sulle scale continue di Valenza e Arousal deformi la distribuzione delle classi, generi pseudo-apprendimento e condizioni direttamente le conclusioni dello studio.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TAB 3: KEY CONCLUSIONS -->
+                        <div id="tab-conclusions" class="overview-tab-content hidden space-y-4">
+                            <!-- English Version -->
+                            <div class="lang-en space-y-4">
+                                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-200/80">
+                                    <h4 class="text-sm font-bold text-blue-900 mb-1 flex items-center gap-2">
+                                        <svg class="w-5 h-5 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                                        Core Takeaway: The Joint Prerequisite for EEG Emotion Decoding
+                                    </h4>
+                                    <p class="text-xs md:text-sm text-slate-700 leading-relaxed">
+                                        Deep Learning models exceed statistically significant chance level (<span class="font-semibold text-slate-900 font-mono">t</span>, omnibus test <span class="font-semibold text-blue-800">p &lt; 0.001</span>) <strong class="text-blue-900">strictly and only</strong> when trained using <span class="underline decoration-blue-400 font-medium">personalized private labels</span> paired with the <span class="underline decoration-blue-400 font-medium">subject's specific neural fingerprint</span>.
+                                    </p>
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+                                    <div class="p-3.5 rounded-lg border border-slate-200 bg-slate-50/50">
+                                        <div class="font-bold text-slate-900 text-xs mb-1.5 flex items-center gap-1.5 text-rose-700">
+                                            <span>&#10007;</span> Public Labels Noise
+                                        </div>
+                                        <p class="text-slate-600 text-xs leading-relaxed">
+                                            When models are trained on public labels, performance falls below the statistical significance threshold <span class="font-mono font-semibold">t</span>. Consensus annotations introduce label noise that does not correspond to the user's actual affective state.
+                                        </p>
+                                    </div>
+
+                                    <div class="p-3.5 rounded-lg border border-slate-200 bg-slate-50/50">
+                                        <div class="font-bold text-slate-900 text-xs mb-1.5 flex items-center gap-1.5 text-amber-700">
+                                            <span>&#9888;</span> LOSO Generalization Barrier
+                                        </div>
+                                        <p class="text-slate-600 text-xs leading-relaxed">
+                                            In Leave-One-Subject-Out (LOSO) cross-validation, removing the subject's baseline neural pattern drops F1-scores below chance level, proving that subject-independent cross-subject generalization remains unresolved.
+                                        </p>
+                                    </div>
+
+                                    <div class="p-3.5 rounded-lg border border-slate-200 bg-slate-50/50">
+                                        <div class="font-bold text-slate-900 text-xs mb-1.5 flex items-center gap-1.5 text-blue-700">
+                                            <span>&#10003;</span> Dimensional &gt; Categorical
+                                        </div>
+                                        <p class="text-slate-600 text-xs leading-relaxed">
+                                            Continuous axes (Valence and Arousal) represent emotional EEG dynamics significantly better than discrete categories (Happiness, Neutral, Sadness - HNS), which fail to achieve significant F1-scores across validation schemes.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div class="text-xs text-slate-500 bg-white p-3 rounded-lg border border-slate-200 italic">
+                                    <strong>Methodological Warning:</strong> High raw accuracy figures reported in affective computing literature should be examined with caution. Without verifying F1-scores against statistical chance levels and ensuring trial independence, high accuracy often reflects threshold-induced class imbalance rather than true neural emotional decoding.
+                                </div>
+                            </div>
+
+                            <!-- Italian Version -->
+                            <div class="lang-it hidden space-y-4">
+                                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-200/80">
+                                    <h4 class="text-sm font-bold text-blue-900 mb-1 flex items-center gap-2">
+                                        <svg class="w-5 h-5 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                                        Risultato Fondamentale: Il Requisito Congiunto per la Decodifica EEG
+                                    </h4>
+                                    <p class="text-xs md:text-sm text-slate-700 leading-relaxed">
+                                        I modelli di Deep Learning superano la soglia statistica di significatività (<span class="font-semibold text-slate-900 font-mono">t</span>, test omnibus <span class="font-semibold text-blue-800">p &lt; 0.001</span>) <strong class="text-blue-900">esclusivamente</strong> quando addestrati combinando <span class="underline decoration-blue-400 font-medium">etichette private personalizzate</span> con l'<span class="underline decoration-blue-400 font-medium">impronta neurale specifica del singolo soggetto</span>.
+                                    </p>
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+                                    <div class="p-3.5 rounded-lg border border-slate-200 bg-slate-50/50">
+                                        <div class="font-bold text-slate-900 text-xs mb-1.5 flex items-center gap-1.5 text-rose-700">
+                                            <span>&#10007;</span> Rumore delle Public Labels
+                                        </div>
+                                        <p class="text-slate-600 text-xs leading-relaxed">
+                                            Addestrando i modelli sulle etichette pubbliche, le prestazioni restano al di sotto della soglia statistica <span class="font-mono font-semibold">t</span>. Le annotazioni standardizzate introducono rumore che non riflette lo stato affettivo reale del partecipante.
+                                        </p>
+                                    </div>
+
+                                    <div class="p-3.5 rounded-lg border border-slate-200 bg-slate-50/50">
+                                        <div class="font-bold text-slate-900 text-xs mb-1.5 flex items-center gap-1.5 text-amber-700">
+                                            <span>&#9888;</span> Limite Cross-Soggetto (LOSO)
+                                        </div>
+                                        <p class="text-slate-600 text-xs leading-relaxed">
+                                            Nella validazione Leave-One-Subject-Out (LOSO), l'esclusione della baseline neurale soggettiva fa precipitare gli F1-score sotto il livello del caso, dimostrando che la generalizzazione tra soggetti diversi rimane un problema aperto.
+                                        </p>
+                                    </div>
+
+                                    <div class="p-3.5 rounded-lg border border-slate-200 bg-slate-50/50">
+                                        <div class="font-bold text-slate-900 text-xs mb-1.5 flex items-center gap-1.5 text-blue-700">
+                                            <span>&#10003;</span> Dimensionale &gt; Categorico
+                                        </div>
+                                        <p class="text-slate-600 text-xs leading-relaxed">
+                                            Gli assi dimensionali continui (Valenza e Arousal) riflettono le risposte EEG in modo nettamente superiore rispetto alle categorie discrete (HNS), per le quali l'F1-score non raggiunge la significatività in alcuno schema.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div class="text-xs text-slate-500 bg-white p-3 rounded-lg border border-slate-200 italic">
+                                    <strong>Allerta Metodologica:</strong> Le alte accuratezze nominali spesso riportate in letteratura devono essere interpretate con rigore critico. Senza un'analisi congiunta di F1-score, Precision e Recall e senza verifica contro soglie di significatività empiriche, l'alta accuratezza deriva spesso dallo sbilanciamento di classe anziché da autentica decodifica emozionale.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TAB 4: HOW TO READ THE DASHBOARD -->
+                        <div id="tab-guide" class="overview-tab-content hidden space-y-4">
+                            <!-- English Version -->
+                            <div class="lang-en space-y-4">
+                                <p class="text-slate-600 text-xs md:text-sm leading-relaxed">
+                                    This interactive web application provides full transparency into the study data, enabling peer reviewers and researchers to explore each stage of the research pipeline:
+                                </p>
+
+                                <div class="space-y-3">
+                                    <!-- Step 1 Guide -->
+                                    <div class="p-3.5 rounded-lg bg-slate-50 border border-slate-200 flex flex-col md:flex-row gap-3 items-start">
+                                        <div class="w-7 h-7 rounded-md bg-slate-800 text-white flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
+                                            1
+                                        </div>
+                                        <div class="space-y-1">
+                                            <div class="flex items-center gap-2">
+                                                <h5 class="font-bold text-slate-900 text-sm">EEG Data Preprocessing Pipeline</h5>
+                                                <a href="#dashboard" class="text-xs text-blue-600 hover:underline font-semibold">&darr; Jump to Section</a>
+                                            </div>
+                                            <p class="text-slate-600 text-xs leading-relaxed">
+                                                Examine the standardized 10-step signal cleaning workflow: Band-pass (4–64 Hz) &amp; Notch (50 Hz), PREP automated noisy channel rejection and spherical spline interpolation, Robust CAR, Extended Infomax ICA with ICLabel artifact removal, downsampling to 128 Hz, epoching, and training-fold-isolated z-scaling.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Step 2 Guide -->
+                                    <div class="p-3.5 rounded-lg bg-slate-50 border border-slate-200 flex flex-col md:flex-row gap-3 items-start">
+                                        <div class="w-7 h-7 rounded-md bg-blue-600 text-white flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
+                                            2
+                                        </div>
+                                        <div class="space-y-1">
+                                            <div class="flex items-center gap-2">
+                                                <h5 class="font-bold text-slate-900 text-sm">Label Binarization &amp; Transition Flow</h5>
+                                                <a href="#transitions-section" class="text-xs text-blue-600 hover:underline font-semibold">&darr; Jump to Section</a>
+                                            </div>
+                                            <p class="text-slate-600 text-xs leading-relaxed">
+                                                Select a dataset (DEAP vs. Imag2Emo) and emotional dimension (Valence, Arousal, HNS). <strong class="text-slate-800">Move the threshold sliders (<span class="font-serif italic">t<sub>label</sub></span>)</strong> to see in real-time how continuous rating splits alter class balance and drive sample reclassifications between Public and Private labels. Track live SMAPE error and human agreement concordance.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Step 3 Guide -->
+                                    <div class="p-3.5 rounded-lg bg-slate-50 border border-slate-200 flex flex-col md:flex-row gap-3 items-start">
+                                        <div class="w-7 h-7 rounded-md bg-emerald-600 text-white flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
+                                            3
+                                        </div>
+                                        <div class="space-y-1">
+                                            <div class="flex items-center gap-2">
+                                                <h5 class="font-bold text-slate-900 text-sm">Deep Learning Classification Results Explorer</h5>
+                                                <a href="#interactive-dashboard" class="text-xs text-blue-600 hover:underline font-semibold">&darr; Jump to Section</a>
+                                            </div>
+                                            <p class="text-slate-600 text-xs leading-relaxed">
+                                                Use the 5 drop-down menus to query any experimental condition: <strong>Dataset</strong> (<em class="text-slate-700">DEAP_R, DEAP_P, Imag2Emo</em>), <strong>Label Type</strong> (<em class="text-slate-700">Public vs. Private</em>), <strong>Dimension</strong> (<em class="text-slate-700">Valence, Arousal, HNS</em>), <strong>Validation</strong> (<em class="text-slate-700">Simple K-Fold, K-Fold [Sub-split], LOSO</em>), and <strong>Model Architecture</strong> (<em class="text-slate-700">EEGNetv4, EEGDeformer, ContraNet, Conformer, EEGViT</em>).
+                                            </p>
+                                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 text-[11px] text-slate-500">
+                                                <div class="p-2 bg-white rounded border border-slate-200">
+                                                    <strong class="text-slate-800">Learning Curves:</strong> Visualizes training vs. validation loss/accuracy across epochs (<span class="font-mono text-slate-700">avg_curves.png</span>).
+                                                </div>
+                                                <div class="p-2 bg-white rounded border border-slate-200">
+                                                    <strong class="text-slate-800">Classification Report:</strong> Reports per-class Precision, Recall, F1-Score, Overall Accuracy, and statistical significance against chance level <span class="font-mono font-semibold">t</span>.
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Italian Version -->
+                            <div class="lang-it hidden space-y-4">
+                                <p class="text-slate-600 text-xs md:text-sm leading-relaxed">
+                                    Questa dashboard interattiva offre piena trasparenza sui dati dello studio, consentendo a revisori e ricercatori di esplorare ogni fase della sperimentazione:
+                                </p>
+
+                                <div class="space-y-3">
+                                    <!-- Step 1 Guide -->
+                                    <div class="p-3.5 rounded-lg bg-slate-50 border border-slate-200 flex flex-col md:flex-row gap-3 items-start">
+                                        <div class="w-7 h-7 rounded-md bg-slate-800 text-white flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
+                                            1
+                                        </div>
+                                        <div class="space-y-1">
+                                            <div class="flex items-center gap-2">
+                                                <h5 class="font-bold text-slate-900 text-sm">Pipeline di Preprocessing EEG</h5>
+                                                <a href="#dashboard" class="text-xs text-blue-600 hover:underline font-semibold">&darr; Vai alla Sezione</a>
+                                            </div>
+                                            <p class="text-slate-600 text-xs leading-relaxed">
+                                                Esplora il flusso standardizzato a 10 passaggi per la pulizia del segnale: filtri passa-banda (4–64 Hz) e notch (50 Hz), pipeline PREP per canali anomali e interpolazione spline, Robust CAR, Extended Infomax ICA con ICLabel per rimozione artefatti, downsampling a 128 Hz, epoching e z-scaling fittato sul train set.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Step 2 Guide -->
+                                    <div class="p-3.5 rounded-lg bg-slate-50 border border-slate-200 flex flex-col md:flex-row gap-3 items-start">
+                                        <div class="w-7 h-7 rounded-md bg-blue-600 text-white flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
+                                            2
+                                        </div>
+                                        <div class="space-y-1">
+                                            <div class="flex items-center gap-2">
+                                                <h5 class="font-bold text-slate-900 text-sm">Binarizzazione &amp; Flussi di Transizione</h5>
+                                                <a href="#transitions-section" class="text-xs text-blue-600 hover:underline font-semibold">&darr; Vai alla Sezione</a>
+                                            </div>
+                                            <p class="text-slate-600 text-xs leading-relaxed">
+                                                Seleziona il dataset (DEAP vs. Imag2Emo) e la dimensione emotiva (Valence, Arousal, HNS). <strong class="text-slate-800">Muovi gli slider delle soglie (<span class="font-serif italic">t<sub>label</sub></span>)</strong> per osservare in tempo reale come varia la distribuzione delle classi e il flusso di campioni stabili e riclassificati tra etichette Pubbliche e Private. Monitora l'indice SMAPE e la concordanza umana.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Step 3 Guide -->
+                                    <div class="p-3.5 rounded-lg bg-slate-50 border border-slate-200 flex flex-col md:flex-row gap-3 items-start">
+                                        <div class="w-7 h-7 rounded-md bg-emerald-600 text-white flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
+                                            3
+                                        </div>
+                                        <div class="space-y-1">
+                                            <div class="flex items-center gap-2">
+                                                <h5 class="font-bold text-slate-900 text-sm">Esploratore Risultati Deep Learning</h5>
+                                                <a href="#interactive-dashboard" class="text-xs text-blue-600 hover:underline font-semibold">&darr; Vai alla Sezione</a>
+                                            </div>
+                                            <p class="text-slate-600 text-xs leading-relaxed">
+                                                Utilizza i 5 menu a tendina per interrogare qualsiasi condizione sperimentale: <strong>Dataset</strong> (<em class="text-slate-700">DEAP_R, DEAP_P, Imag2Emo</em>), <strong>Tipo Etichetta</strong> (<em class="text-slate-700">Public vs. Private</em>), <strong>Dimensione</strong> (<em class="text-slate-700">Valence, Arousal, HNS</em>), <strong>Validazione</strong> (<em class="text-slate-700">Simple K-Fold, K-Fold [Sub-split], LOSO</em>) e <strong>Architettura</strong> (<em class="text-slate-700">EEGNetv4, EEGDeformer, ContraNet, Conformer, EEGViT</em>).
+                                            </p>
+                                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 text-[11px] text-slate-500">
+                                                <div class="p-2 bg-white rounded border border-slate-200">
+                                                    <strong class="text-slate-800">Curve di Apprendimento:</strong> Visualizza convergenza e stabilità su train e validation set (<span class="font-mono text-slate-700">avg_curves.png</span>).
+                                                </div>
+                                                <div class="p-2 bg-white rounded border border-slate-200">
+                                                    <strong class="text-slate-800">Report di Classificazione:</strong> Riporta Precision, Recall, F1-Score per classe, accuratezza complessiva e significatività statistica rispetto al chance level <span class="font-mono font-semibold">t</span>.
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
                 </div>
             </div>
         </section>
@@ -544,6 +998,62 @@ Standardized Labels</h1>
         const mobileMenu = document.getElementById('mobile-menu');
         mobileMenuButton.addEventListener('click', () => {
             mobileMenu.classList.toggle('hidden');
+        });
+
+        // --- Study Overview Tabs & Language Switcher Logic ---
+        let currentOverviewLang = 'en';
+
+        function setOverviewLanguage(lang) {
+            currentOverviewLang = lang;
+            const btnEn = document.getElementById('lang-btn-en');
+            const btnIt = document.getElementById('lang-btn-it');
+            const enElements = document.querySelectorAll('.lang-en');
+            const itElements = document.querySelectorAll('.lang-it');
+            const titleEl = document.getElementById('overview-title');
+            const subtitleEl = document.getElementById('overview-subtitle');
+
+            if (lang === 'it') {
+                if (btnIt) btnIt.className = "px-2.5 py-1 rounded-md transition-all bg-white text-blue-700 shadow-xs font-bold";
+                if (btnEn) btnEn.className = "px-2.5 py-1 rounded-md transition-all text-slate-600 hover:text-slate-900 font-medium";
+                enElements.forEach(el => el.classList.add('hidden'));
+                itElements.forEach(el => el.classList.remove('hidden'));
+                if (titleEl) titleEl.textContent = "Panoramica dello Studio & Guida";
+                if (subtitleEl) subtitleEl.textContent = "Sintesi dei risultati da Lozzi et al. \u2022 Universit\u00e0 dell'Aquila & TU Graz";
+            } else {
+                if (btnEn) btnEn.className = "px-2.5 py-1 rounded-md transition-all bg-white text-blue-700 shadow-xs font-bold";
+                if (btnIt) btnIt.className = "px-2.5 py-1 rounded-md transition-all text-slate-600 hover:text-slate-900 font-medium";
+                itElements.forEach(el => el.classList.add('hidden'));
+                enElements.forEach(el => el.classList.remove('hidden'));
+                if (titleEl) titleEl.textContent = "Study Overview & Guide";
+                if (subtitleEl) subtitleEl.textContent = "Synthesis of findings from Lozzi et al. \u2022 University of L\u2019Aquila & TU Graz";
+            }
+        }
+
+        // Overview Tabs Click Handler
+        const overviewTabButtons = document.querySelectorAll('.overview-tab-btn');
+        const overviewTabContents = document.querySelectorAll('.overview-tab-content');
+
+        overviewTabButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const targetId = btn.getAttribute('data-target');
+
+                // Update button styles
+                overviewTabButtons.forEach(b => {
+                    b.classList.remove('bg-blue-50', 'text-blue-700', 'border-blue-200', 'shadow-xs', 'font-semibold');
+                    b.classList.add('text-slate-600', 'hover:text-slate-900', 'hover:bg-slate-50', 'border-transparent', 'font-medium');
+                });
+                btn.classList.remove('text-slate-600', 'hover:text-slate-900', 'hover:bg-slate-50', 'border-transparent', 'font-medium');
+                btn.classList.add('bg-blue-50', 'text-blue-700', 'border-blue-200', 'shadow-xs', 'font-semibold');
+
+                // Show target content, hide others
+                overviewTabContents.forEach(content => {
+                    if (content.id === targetId) {
+                        content.classList.remove('hidden');
+                    } else {
+                        content.classList.add('hidden');
+                    }
+                });
+            });
         });
 
         // --- Interactive Dashboard Logic ---
