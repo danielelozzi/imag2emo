@@ -860,7 +860,7 @@ Standardized Labels</h1>
                     <div class="card">
                         <div class="flex justify-between items-center mb-3">
                             <h4 class="text-sm font-bold text-slate-800 uppercase tracking-wider">Flow Statistics</h4>
-                            <span id="trans-sample-count" class="text-xs font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-600">N = 880</span>
+                            <span id="trans-sample-count" class="text-xs font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-600">100% Normalized</span>
                         </div>
                         <div class="grid grid-cols-3 gap-2.5 text-center mb-4">
                             <div class="p-2.5 bg-emerald-50 border border-emerald-100 rounded-lg">
@@ -872,8 +872,8 @@ Standardized Labels</h1>
                                 <div id="trans-stat-transition" class="text-lg font-black text-rose-700 mt-0.5">21.2%</div>
                             </div>
                             <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-lg">
-                                <div class="text-[11px] text-slate-600 font-medium">Balance</div>
-                                <div id="trans-stat-balance" class="text-xs font-bold text-slate-800 mt-1.5">1 : 3.7</div>
+                                <div class="text-[11px] text-slate-600 font-medium">Distribution</div>
+                                <div id="trans-stat-balance" class="text-xs font-bold text-slate-800 mt-1.5">21.2% : 78.8%</div>
                             </div>
                         </div>
 
@@ -907,7 +907,7 @@ Standardized Labels</h1>
                                     Public &rarr; Private - VALENCE
                                 </h3>
                                 <p id="diagram-subtitle-text" class="text-xs text-slate-500">
-                                    DEAP Dataset &bull; 22 participants &bull; 880 trials
+                                    DEAP Dataset &bull; Relative Distribution (%)
                                 </p>
                             </div>
                             <button id="btn-export-svg" title="Export as SVG image" class="text-xs font-medium px-2.5 py-1 text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded border border-slate-200 flex items-center gap-1 transition">
@@ -1284,7 +1284,7 @@ Standardized Labels</h1>
                     type: 'valence',
                     dataset: 'DEAP',
                     title: 'Public → Private - VALENCE',
-                    subtitle: 'DEAP Dataset • 22 participants • 880 trials',
+                    subtitle: 'DEAP Dataset • Relative Distribution (%)',
                     badge: 'DEAP • Valence',
                     defaultTh: 4.5
                 },
@@ -1292,7 +1292,7 @@ Standardized Labels</h1>
                     type: 'arousal',
                     dataset: 'DEAP',
                     title: 'Public → Private - AROUSAL',
-                    subtitle: 'DEAP Dataset • 22 participants • 880 trials',
+                    subtitle: 'DEAP Dataset • Relative Distribution (%)',
                     badge: 'DEAP • Arousal',
                     defaultTh: 5.0
                 },
@@ -1300,7 +1300,7 @@ Standardized Labels</h1>
                     type: 'valence',
                     dataset: 'Imag2Emo',
                     title: 'Public → Private - VALENCE',
-                    subtitle: 'Imag2Emo (Graz) Dataset • 11 participants • 1,980 trials',
+                    subtitle: 'Imag2Emo (Graz) Dataset • Relative Distribution (%)',
                     badge: 'Imag2Emo • Valence',
                     defaultTh: 4.5
                 },
@@ -1308,7 +1308,7 @@ Standardized Labels</h1>
                     type: 'arousal',
                     dataset: 'Imag2Emo',
                     title: 'Public → Private - AROUSAL',
-                    subtitle: 'Imag2Emo (Graz) Dataset • 11 participants • 1,980 trials',
+                    subtitle: 'Imag2Emo (Graz) Dataset • Relative Distribution (%)',
                     badge: 'Imag2Emo • Arousal',
                     defaultTh: 5.0
                 },
@@ -1316,7 +1316,7 @@ Standardized Labels</h1>
                     type: 'hns',
                     dataset: 'Imag2Emo',
                     title: 'Emotional flow diagram: from Public to Private',
-                    subtitle: 'Imag2Emo (Graz) Dataset • Categorical HNS (Happiness, Sadness, Neutral)',
+                    subtitle: 'Imag2Emo (Graz) Dataset • Categorical HNS (%)',
                     badge: 'Imag2Emo • HNS',
                     defaultDelta: 1.0
                 }
@@ -1420,13 +1420,17 @@ Standardized Labels</h1>
                 const stableTotal = c00 + c11;
                 const stabilityPct = (stableTotal / n) * 100;
                 const transitionPct = 100 - stabilityPct;
-                const balanceStr = (pubHigh > 0) ? `1 : ${(pubHigh / (pubLow || 1)).toFixed(2)}` : 'N/A';
+                const pubLowPct = (pubLow / n) * 100;
+                const pubHighPct = (pubHigh / n) * 100;
+                const privLowPct = (privLow / n) * 100;
+                const privHighPct = (privHigh / n) * 100;
+                const balanceStr = `${pubLowPct.toFixed(1)}% : ${pubHighPct.toFixed(1)}%`;
 
                 // Update metrics cards
                 transStatStability.textContent = stabilityPct.toFixed(1) + '%';
                 transStatTransition.textContent = transitionPct.toFixed(1) + '%';
                 transStatBalance.textContent = balanceStr;
-                transSampleCount.textContent = `N = ${n}`;
+                transSampleCount.textContent = '100% Normalized';
 
                 // Update Contingency Matrix
                 const labelLow = (cfg.type === 'valence') ? 'LV' : 'LA';
@@ -1439,37 +1443,37 @@ Standardized Labels</h1>
                                 <th class="p-1.5 border border-slate-200 font-semibold text-left">Public \\ Private</th>
                                 <th class="p-1.5 border border-slate-200 font-semibold">${labelLow}</th>
                                 <th class="p-1.5 border border-slate-200 font-semibold">${labelHigh}</th>
-                                <th class="p-1.5 border border-slate-200 font-semibold bg-slate-200/60">Total Pub</th>
+                                <th class="p-1.5 border border-slate-200 font-semibold bg-slate-200/60">Row Total</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
                                 <td class="p-1.5 border border-slate-200 font-medium text-left bg-slate-50">${labelLow}</td>
                                 <td class="p-1.5 border border-slate-200 bg-emerald-50/60 font-bold text-emerald-800">
-                                    ${c00} <span class="text-[10px] font-normal text-emerald-600 block">(${pct00.toFixed(1)}%)</span>
+                                    ${pct00.toFixed(1)}%
                                 </td>
                                 <td class="p-1.5 border border-slate-200 bg-rose-50/50 font-medium text-rose-800">
-                                    ${c01} <span class="text-[10px] font-normal text-rose-600 block">(${pct01.toFixed(1)}%)</span>
+                                    ${pct01.toFixed(1)}%
                                 </td>
-                                <td class="p-1.5 border border-slate-200 font-bold text-slate-700 bg-slate-100">${pubLow}</td>
+                                <td class="p-1.5 border border-slate-200 font-bold text-slate-700 bg-slate-100">100.0%</td>
                             </tr>
                             <tr>
                                 <td class="p-1.5 border border-slate-200 font-medium text-left bg-slate-50">${labelHigh}</td>
                                 <td class="p-1.5 border border-slate-200 bg-rose-50/50 font-medium text-rose-800">
-                                    ${c10} <span class="text-[10px] font-normal text-rose-600 block">(${pct10.toFixed(1)}%)</span>
+                                    ${pct10.toFixed(1)}%
                                 </td>
                                 <td class="p-1.5 border border-slate-200 bg-emerald-50/60 font-bold text-emerald-800">
-                                    ${c11} <span class="text-[10px] font-normal text-emerald-600 block">(${pct11.toFixed(1)}%)</span>
+                                    ${pct11.toFixed(1)}%
                                 </td>
-                                <td class="p-1.5 border border-slate-200 font-bold text-slate-700 bg-slate-100">${pubHigh}</td>
+                                <td class="p-1.5 border border-slate-200 font-bold text-slate-700 bg-slate-100">100.0%</td>
                             </tr>
                         </tbody>
                         <tfoot class="bg-slate-100 font-semibold text-slate-700">
                             <tr>
-                                <td class="p-1.5 border border-slate-200 text-left bg-slate-200/60">Total Priv</td>
-                                <td class="p-1.5 border border-slate-200">${privLow}</td>
-                                <td class="p-1.5 border border-slate-200">${privHigh}</td>
-                                <td class="p-1.5 border border-slate-200 bg-slate-200 font-black">${n}</td>
+                                <td class="p-1.5 border border-slate-200 text-left bg-slate-200/60">Marginal Priv</td>
+                                <td class="p-1.5 border border-slate-200">${privLowPct.toFixed(1)}%</td>
+                                <td class="p-1.5 border border-slate-200">${privHighPct.toFixed(1)}%</td>
+                                <td class="p-1.5 border border-slate-200 bg-slate-200 font-black">100.0%</td>
                             </tr>
                         </tfoot>
                     </table>
@@ -1537,11 +1541,14 @@ Standardized Labels</h1>
                 const stableTotal = trans['H,H'] + trans['S,S'] + trans['N,N'];
                 const stabilityPct = (stableTotal / n) * 100;
                 const transitionPct = 100 - stabilityPct;
+                const pubHPct = ((pubCounts.H / n) * 100).toFixed(1);
+                const pubSPct = ((pubCounts.S / n) * 100).toFixed(1);
+                const pubNPct = ((pubCounts.N / n) * 100).toFixed(1);
 
                 transStatStability.textContent = stabilityPct.toFixed(1) + '%';
                 transStatTransition.textContent = transitionPct.toFixed(1) + '%';
-                transStatBalance.textContent = `${pubCounts.H} : ${pubCounts.S} : ${pubCounts.N}`;
-                transSampleCount.textContent = `N = ${n}`;
+                transStatBalance.textContent = `${pubHPct}% : ${pubSPct}% : ${pubNPct}%`;
+                transSampleCount.textContent = '100% Normalized';
 
                 // Contingency Table
                 transContingencyTable.innerHTML = `
@@ -1552,39 +1559,39 @@ Standardized Labels</h1>
                                 <th class="p-1.5 border border-slate-200 font-semibold text-emerald-700">H (Happiness)</th>
                                 <th class="p-1.5 border border-slate-200 font-semibold text-rose-700">S (Sadness)</th>
                                 <th class="p-1.5 border border-slate-200 font-semibold text-slate-700">N (Neutral)</th>
-                                <th class="p-1.5 border border-slate-200 font-semibold bg-slate-200/60">Total Pub</th>
+                                <th class="p-1.5 border border-slate-200 font-semibold bg-slate-200/60">Row Total</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
                                 <td class="p-1.5 border border-slate-200 font-bold text-left text-emerald-700 bg-emerald-50/40">H</td>
-                                <td class="p-1.5 border border-slate-200 bg-emerald-100/60 font-black text-emerald-800">${trans['H,H']} <span class="text-[10px] font-normal block">(${pcts['H,H'].toFixed(1)}%)</span></td>
-                                <td class="p-1.5 border border-slate-200 bg-rose-50/50 text-rose-800">${trans['H,S']} <span class="text-[10px] font-normal block">(${pcts['H,S'].toFixed(1)}%)</span></td>
-                                <td class="p-1.5 border border-slate-200 bg-slate-50 text-slate-700">${trans['H,N']} <span class="text-[10px] font-normal block">(${pcts['H,N'].toFixed(1)}%)</span></td>
-                                <td class="p-1.5 border border-slate-200 font-bold bg-slate-100">${pubCounts.H}</td>
+                                <td class="p-1.5 border border-slate-200 bg-emerald-100/60 font-black text-emerald-800">${pcts['H,H'].toFixed(1)}%</td>
+                                <td class="p-1.5 border border-slate-200 bg-rose-50/50 text-rose-800">${pcts['H,S'].toFixed(1)}%</td>
+                                <td class="p-1.5 border border-slate-200 bg-slate-50 text-slate-700">${pcts['H,N'].toFixed(1)}%</td>
+                                <td class="p-1.5 border border-slate-200 font-bold bg-slate-100">100.0%</td>
                             </tr>
                             <tr>
                                 <td class="p-1.5 border border-slate-200 font-bold text-left text-rose-700 bg-rose-50/40">S</td>
-                                <td class="p-1.5 border border-slate-200 bg-rose-50/50 text-rose-800">${trans['S,H']} <span class="text-[10px] font-normal block">(${pcts['S,H'].toFixed(1)}%)</span></td>
-                                <td class="p-1.5 border border-slate-200 bg-rose-100/60 font-black text-rose-800">${trans['S,S']} <span class="text-[10px] font-normal block">(${pcts['S,S'].toFixed(1)}%)</span></td>
-                                <td class="p-1.5 border border-slate-200 bg-slate-50 text-slate-700">${trans['S,N']} <span class="text-[10px] font-normal block">(${pcts['S,N'].toFixed(1)}%)</span></td>
-                                <td class="p-1.5 border border-slate-200 font-bold bg-slate-100">${pubCounts.S}</td>
+                                <td class="p-1.5 border border-slate-200 bg-rose-50/50 text-rose-800">${pcts['S,H'].toFixed(1)}%</td>
+                                <td class="p-1.5 border border-slate-200 bg-rose-100/60 font-black text-rose-800">${pcts['S,S'].toFixed(1)}%</td>
+                                <td class="p-1.5 border border-slate-200 bg-slate-50 text-slate-700">${pcts['S,N'].toFixed(1)}%</td>
+                                <td class="p-1.5 border border-slate-200 font-bold bg-slate-100">100.0%</td>
                             </tr>
                             <tr>
                                 <td class="p-1.5 border border-slate-200 font-bold text-left text-slate-700 bg-slate-50">N</td>
-                                <td class="p-1.5 border border-slate-200 bg-emerald-50/30 text-emerald-800">${trans['N,H']} <span class="text-[10px] font-normal block">(${pcts['N,H'].toFixed(1)}%)</span></td>
-                                <td class="p-1.5 border border-slate-200 bg-rose-50/30 text-rose-800">${trans['N,S']} <span class="text-[10px] font-normal block">(${pcts['N,S'].toFixed(1)}%)</span></td>
-                                <td class="p-1.5 border border-slate-200 bg-slate-200/60 font-black text-slate-800">${trans['N,N']} <span class="text-[10px] font-normal block">(${pcts['N,N'].toFixed(1)}%)</span></td>
-                                <td class="p-1.5 border border-slate-200 font-bold bg-slate-100">${pubCounts.N}</td>
+                                <td class="p-1.5 border border-slate-200 bg-emerald-50/30 text-emerald-800">${pcts['N,H'].toFixed(1)}%</td>
+                                <td class="p-1.5 border border-slate-200 bg-rose-50/30 text-rose-800">${pcts['N,S'].toFixed(1)}%</td>
+                                <td class="p-1.5 border border-slate-200 bg-slate-200/60 font-black text-slate-800">${pcts['N,N'].toFixed(1)}%</td>
+                                <td class="p-1.5 border border-slate-200 font-bold bg-slate-100">100.0%</td>
                             </tr>
                         </tbody>
                         <tfoot class="bg-slate-100 font-semibold text-slate-700">
                             <tr>
-                                <td class="p-1.5 border border-slate-200 text-left bg-slate-200/60">Total Priv</td>
-                                <td class="p-1.5 border border-slate-200 text-emerald-800">${privCounts.H}</td>
-                                <td class="p-1.5 border border-slate-200 text-rose-800">${privCounts.S}</td>
-                                <td class="p-1.5 border border-slate-200 text-slate-800">${privCounts.N}</td>
-                                <td class="p-1.5 border border-slate-200 bg-slate-200 font-black">${n}</td>
+                                <td class="p-1.5 border border-slate-200 text-left bg-slate-200/60">Marginal Priv</td>
+                                <td class="p-1.5 border border-slate-200 text-emerald-800">${((privCounts.H / n) * 100).toFixed(1)}%</td>
+                                <td class="p-1.5 border border-slate-200 text-rose-800">${((privCounts.S / n) * 100).toFixed(1)}%</td>
+                                <td class="p-1.5 border border-slate-200 text-slate-800">${((privCounts.N / n) * 100).toFixed(1)}%</td>
+                                <td class="p-1.5 border border-slate-200 bg-slate-200 font-black">100.0%</td>
                             </tr>
                         </tfoot>
                     </table>
@@ -1676,18 +1683,18 @@ Standardized Labels</h1>
 
                 <!-- Corner Info Box: LV (Bottom-Left) -->
                 <g transform="translate(14, 520)">
-                    <rect x="0" y="0" width="105" height="62" rx="4" fill="#ffffff" stroke="#0f172a" stroke-width="1" />
+                    <rect x="0" y="0" width="112" height="62" rx="4" fill="#ffffff" stroke="#0f172a" stroke-width="1" />
                     <text x="8" y="18" font-size="13" font-weight="bold" fill="#0f172a">${d.labelLow}</text>
-                    <text x="8" y="36" font-size="12" fill="#334155">Public: ${d.pubLow}</text>
-                    <text x="8" y="52" font-size="12" fill="#334155">Private: ${d.privLow}</text>
+                    <text x="8" y="36" font-size="12" fill="#334155">Public: ${((d.pubLow / d.n) * 100).toFixed(1)}%</text>
+                    <text x="8" y="52" font-size="12" fill="#334155">Private: ${((d.privLow / d.n) * 100).toFixed(1)}%</text>
                 </g>
 
                 <!-- Corner Info Box: HV (Bottom-Right) -->
-                <g transform="translate(480, 520)">
-                    <rect x="0" y="0" width="105" height="62" rx="4" fill="#ffffff" stroke="#0f172a" stroke-width="1" />
+                <g transform="translate(474, 520)">
+                    <rect x="0" y="0" width="112" height="62" rx="4" fill="#ffffff" stroke="#0f172a" stroke-width="1" />
                     <text x="8" y="18" font-size="13" font-weight="bold" fill="#0f172a">${d.labelHigh}</text>
-                    <text x="8" y="36" font-size="12" fill="#334155">Public: ${d.pubHigh}</text>
-                    <text x="8" y="52" font-size="12" fill="#334155">Private: ${d.privHigh}</text>
+                    <text x="8" y="36" font-size="12" fill="#334155">Public: ${((d.pubHigh / d.n) * 100).toFixed(1)}%</text>
+                    <text x="8" y="52" font-size="12" fill="#334155">Private: ${((d.privHigh / d.n) * 100).toFixed(1)}%</text>
                 </g>
             </svg>
             `;
@@ -1772,18 +1779,18 @@ Standardized Labels</h1>
 
                 <!-- Corner Info Box: LA (Bottom-Left) -->
                 <g transform="translate(14, 520)">
-                    <rect x="0" y="0" width="105" height="62" rx="4" fill="#ffffff" stroke="#0f172a" stroke-width="1" />
+                    <rect x="0" y="0" width="112" height="62" rx="4" fill="#ffffff" stroke="#0f172a" stroke-width="1" />
                     <text x="8" y="18" font-size="13" font-weight="bold" fill="#0f172a">${d.labelLow}</text>
-                    <text x="8" y="36" font-size="12" fill="#334155">Public: ${d.pubLow}</text>
-                    <text x="8" y="52" font-size="12" fill="#334155">Private: ${d.privLow}</text>
+                    <text x="8" y="36" font-size="12" fill="#334155">Public: ${((d.pubLow / d.n) * 100).toFixed(1)}%</text>
+                    <text x="8" y="52" font-size="12" fill="#334155">Private: ${((d.privLow / d.n) * 100).toFixed(1)}%</text>
                 </g>
 
                 <!-- Corner Info Box: HA (Top-Right) -->
-                <g transform="translate(480, 48)">
-                    <rect x="0" y="0" width="105" height="62" rx="4" fill="#ffffff" stroke="#0f172a" stroke-width="1" />
+                <g transform="translate(474, 48)">
+                    <rect x="0" y="0" width="112" height="62" rx="4" fill="#ffffff" stroke="#0f172a" stroke-width="1" />
                     <text x="8" y="18" font-size="13" font-weight="bold" fill="#0f172a">${d.labelHigh}</text>
-                    <text x="8" y="36" font-size="12" fill="#334155">Public: ${d.pubHigh}</text>
-                    <text x="8" y="52" font-size="12" fill="#334155">Private: ${d.privHigh}</text>
+                    <text x="8" y="36" font-size="12" fill="#334155">Public: ${((d.pubHigh / d.n) * 100).toFixed(1)}%</text>
+                    <text x="8" y="52" font-size="12" fill="#334155">Private: ${((d.privHigh / d.n) * 100).toFixed(1)}%</text>
                 </g>
             </svg>
             `;
