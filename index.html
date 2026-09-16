@@ -837,20 +837,8 @@ Standardized Labels</h1>
                             </div>
 
                             <div class="pt-2 border-t border-slate-100">
-                                <label class="block text-xs font-medium text-slate-700 mb-1.5">Alignment Scheme:</label>
-                                <div class="grid grid-cols-2 gap-2">
-                                    <button id="btn-seq-mode" class="text-xs py-1.5 px-2 rounded border bg-blue-50 border-blue-300 text-blue-700 font-semibold text-center transition">
-                                        Timeline Sequence (Paper)
-                                    </button>
-                                    <button id="btn-image-mode" class="text-xs py-1.5 px-2 rounded border bg-white border-slate-200 text-slate-600 hover:bg-slate-50 text-center transition">
-                                        Stimulus ID Match
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="pt-2">
                                 <button id="btn-hns-paper-preset" class="text-xs px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded font-medium transition">
-                                    Paper Default (&Delta; = 1.0)
+                                    Default (&Delta; = 1.0)
                                 </button>
                             </div>
                         </div>
@@ -1238,7 +1226,7 @@ Standardized Labels</h1>
                 deap_arousal: { pub: 5.0, priv: 5.0, split: false },
                 graz_valence: { pub: 4.5, priv: 4.5, split: false },
                 graz_arousal: { pub: 5.0, priv: 5.0, split: false },
-                graz_hns: { delta: 1.0, pairing: 'seq' }
+                graz_hns: { delta: 1.0 }
             }
         };
 
@@ -1259,8 +1247,6 @@ Standardized Labels</h1>
 
         const transDeltaSlider = document.getElementById('trans-delta-slider');
         const transDeltaDisplay = document.getElementById('trans-delta-display');
-        const btnSeqMode = document.getElementById('btn-seq-mode');
-        const btnImageMode = document.getElementById('btn-image-mode');
 
         const btnPaperPreset = document.getElementById('btn-paper-preset');
         const btnMidpointPreset = document.getElementById('btn-midpoint-preset');
@@ -1346,14 +1332,6 @@ Standardized Labels</h1>
                 const st = transState.thresholds.graz_hns;
                 transDeltaSlider.value = st.delta;
                 transDeltaDisplay.textContent = Number(st.delta).toFixed(1);
-
-                if (st.pairing === 'seq') {
-                    btnSeqMode.className = 'text-xs py-1.5 px-2 rounded border bg-blue-50 border-blue-300 text-blue-700 font-semibold text-center transition';
-                    btnImageMode.className = 'text-xs py-1.5 px-2 rounded border bg-white border-slate-200 text-slate-600 hover:bg-slate-50 text-center transition';
-                } else {
-                    btnImageMode.className = 'text-xs py-1.5 px-2 rounded border bg-blue-50 border-blue-300 text-blue-700 font-semibold text-center transition';
-                    btnSeqMode.className = 'text-xs py-1.5 px-2 rounded border bg-white border-slate-200 text-slate-600 hover:bg-slate-50 text-center transition';
-                }
             } else {
                 transHnsControls.classList.add('hidden');
                 transDimControls.classList.remove('hidden');
@@ -1499,11 +1477,7 @@ Standardized Labels</h1>
             } else if (cfg.type === 'hns') {
                 const st = transState.thresholds.graz_hns;
                 const delta = Number(st.delta);
-                const pairing = st.pairing;
-
-                const gData = (pairing === 'seq' && TRANSITION_FLOW_DATA.graz.seq)
-                    ? TRANSITION_FLOW_DATA.graz.seq
-                    : TRANSITION_FLOW_DATA.graz;
+                const gData = TRANSITION_FLOW_DATA.graz;
 
                 const pubHnsArr = gData.hns_pub;
                 const rhArr = gData.rate_happiness;
@@ -1989,16 +1963,6 @@ Standardized Labels</h1>
             renderTransitions();
         });
 
-        btnSeqMode.addEventListener('click', () => {
-            transState.thresholds.graz_hns.pairing = 'seq';
-            updateTransitionsUI();
-        });
-
-        btnImageMode.addEventListener('click', () => {
-            transState.thresholds.graz_hns.pairing = 'image';
-            updateTransitionsUI();
-        });
-
         btnPaperPreset.addEventListener('click', () => {
             const cur = transState.currentDiagram;
             const defTh = getDiagramConfig(cur).defaultTh;
@@ -2017,7 +1981,6 @@ Standardized Labels</h1>
 
         btnHnsPaperPreset.addEventListener('click', () => {
             transState.thresholds.graz_hns.delta = 1.0;
-            transState.thresholds.graz_hns.pairing = 'seq';
             updateTransitionsUI();
         });
 
