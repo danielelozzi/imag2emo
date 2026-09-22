@@ -808,14 +808,14 @@
                                             class="text-xs text-slate-500 font-mono">(t<sub>label</sub>)</span>
                                     </label>
                                     <span id="trans-thresh-display"
-                                        class="font-bold text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded text-sm border border-blue-200">4.50</span>
+                                        class="font-bold text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded text-sm border border-blue-200">Default</span>
                                 </div>
                                 <input id="trans-thresh-slider" type="range" min="1.0" max="9.0" step="0.1" value="4.5"
                                     class="w-full accent-blue-600 cursor-pointer">
                                 <div class="flex justify-between text-[11px] text-slate-400 mt-1">
-                                    <span>1.0 (All High)</span>
-                                    <span>5.0 (Midpoint)</span>
-                                    <span>9.0 (All Low)</span>
+                                    <span>&larr; Below Default</span>
+                                    <span class="font-medium text-slate-500">Default</span>
+                                    <span>Above Default &rarr;</span>
                                 </div>
                             </div>
 
@@ -826,7 +826,7 @@
                                         <label for="trans-pub-slider" class="font-medium text-slate-700">Public
                                             Threshold <span
                                                 class="text-xs text-blue-500 font-mono">(t<sub>pub</sub>)</span></label>
-                                        <span id="trans-pub-display" class="font-semibold text-blue-600">4.50</span>
+                                        <span id="trans-pub-display" class="font-semibold text-blue-600">Default</span>
                                     </div>
                                     <input id="trans-pub-slider" type="range" min="1.0" max="9.0" step="0.1" value="4.5"
                                         class="w-full accent-blue-600 cursor-pointer">
@@ -836,7 +836,7 @@
                                         <label for="trans-priv-slider" class="font-medium text-slate-700">Private
                                             Threshold <span
                                                 class="text-xs text-sky-500 font-mono">(t<sub>priv</sub>)</span></label>
-                                        <span id="trans-priv-display" class="font-semibold text-sky-600">4.50</span>
+                                        <span id="trans-priv-display" class="font-semibold text-sky-600">Default</span>
                                     </div>
                                     <input id="trans-priv-slider" type="range" min="1.0" max="9.0" step="0.1"
                                         value="4.5" class="w-full accent-sky-500 cursor-pointer">
@@ -856,12 +856,8 @@
                             <!-- Presets -->
                             <div class="flex items-center gap-2 pt-2">
                                 <button id="btn-paper-preset"
-                                    class="text-xs px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded font-medium transition">
-                                    Paper Default
-                                </button>
-                                <button id="btn-midpoint-preset"
-                                    class="text-xs px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded font-medium transition">
-                                    Midpoint (5.0)
+                                    class="text-xs px-2.5 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded font-medium transition">
+                                    Reset to Default
                                 </button>
                             </div>
                         </div>
@@ -875,7 +871,7 @@
                                             class="text-xs text-slate-500 font-mono">(&Delta;<sub>H-S</sub>)</span>
                                     </label>
                                     <span id="trans-delta-display"
-                                        class="font-bold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded text-sm border border-emerald-200">1.0</span>
+                                        class="font-bold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded text-sm border border-emerald-200">Default</span>
                                 </div>
                                 <input id="trans-delta-slider" type="range" min="0.5" max="4.0" step="0.5" value="1.0"
                                     class="w-full accent-emerald-600 cursor-pointer">
@@ -887,8 +883,8 @@
 
                             <div class="pt-2 border-t border-slate-100">
                                 <button id="btn-hns-paper-preset"
-                                    class="text-xs px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded font-medium transition">
-                                    Default (&Delta; = 1.0)
+                                    class="text-xs px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded font-medium transition">
+                                    Reset to Default
                                 </button>
                             </div>
                         </div>
@@ -1481,7 +1477,6 @@
         const transDeltaDisplay = document.getElementById('trans-delta-display');
 
         const btnPaperPreset = document.getElementById('btn-paper-preset');
-        const btnMidpointPreset = document.getElementById('btn-midpoint-preset');
         const btnHnsPaperPreset = document.getElementById('btn-hns-paper-preset');
         const btnExportSvg = document.getElementById('btn-export-svg');
 
@@ -1542,6 +1537,20 @@
             return configs[id];
         }
 
+        function getQualitativeThresholdLabel(val, defTh) {
+            const diff = Number(val) - Number(defTh);
+            if (Math.abs(diff) < 0.05) return 'Default';
+            if (diff < 0) return 'Below Default';
+            return 'Above Default';
+        }
+
+        function getQualitativeDeltaLabel(val, defDelta = 1.0) {
+            const diff = Number(val) - Number(defDelta);
+            if (Math.abs(diff) < 0.05) return 'Default';
+            if (diff < 0) return 'Below Default';
+            return 'Above Default';
+        }
+
         function updateTransitionsUI() {
             const cur = transState.currentDiagram;
             const cfg = getDiagramConfig(cur);
@@ -1563,25 +1572,26 @@
                 transHnsControls.classList.remove('hidden');
                 const st = transState.thresholds.graz_hns;
                 transDeltaSlider.value = st.delta;
-                transDeltaDisplay.textContent = Number(st.delta).toFixed(1);
+                transDeltaDisplay.textContent = getQualitativeDeltaLabel(st.delta, cfg.defaultDelta || 1.0);
             } else {
                 transHnsControls.classList.add('hidden');
                 transDimControls.classList.remove('hidden');
                 const st = transState.thresholds[cur];
+                const defTh = cfg.defaultTh;
                 transSplitToggle.checked = st.split;
 
                 if (st.split) {
                     transUnifiedGroup.classList.add('hidden');
                     transSplitGroup.classList.remove('hidden');
                     transPubSlider.value = st.pub;
-                    transPubDisplay.textContent = Number(st.pub).toFixed(2);
+                    transPubDisplay.textContent = getQualitativeThresholdLabel(st.pub, defTh);
                     transPrivSlider.value = st.priv;
-                    transPrivDisplay.textContent = Number(st.priv).toFixed(2);
+                    transPrivDisplay.textContent = getQualitativeThresholdLabel(st.priv, defTh);
                 } else {
                     transSplitGroup.classList.add('hidden');
                     transUnifiedGroup.classList.remove('hidden');
                     transThreshSlider.value = st.pub;
-                    transThreshDisplay.textContent = Number(st.pub).toFixed(2);
+                    transThreshDisplay.textContent = getQualitativeThresholdLabel(st.pub, defTh);
                 }
             }
 
@@ -2161,8 +2171,9 @@
 
         transThreshSlider.addEventListener('input', (e) => {
             const val = parseFloat(e.target.value);
-            transThreshDisplay.textContent = val.toFixed(2);
             const cur = transState.currentDiagram;
+            const defTh = getDiagramConfig(cur).defaultTh;
+            transThreshDisplay.textContent = getQualitativeThresholdLabel(val, defTh);
             transState.thresholds[cur].pub = val;
             transState.thresholds[cur].priv = val;
             renderTransitions();
@@ -2170,15 +2181,19 @@
 
         transPubSlider.addEventListener('input', (e) => {
             const val = parseFloat(e.target.value);
-            transPubDisplay.textContent = val.toFixed(2);
-            transState.thresholds[transState.currentDiagram].pub = val;
+            const cur = transState.currentDiagram;
+            const defTh = getDiagramConfig(cur).defaultTh;
+            transPubDisplay.textContent = getQualitativeThresholdLabel(val, defTh);
+            transState.thresholds[cur].pub = val;
             renderTransitions();
         });
 
         transPrivSlider.addEventListener('input', (e) => {
             const val = parseFloat(e.target.value);
-            transPrivDisplay.textContent = val.toFixed(2);
-            transState.thresholds[transState.currentDiagram].priv = val;
+            const cur = transState.currentDiagram;
+            const defTh = getDiagramConfig(cur).defaultTh;
+            transPrivDisplay.textContent = getQualitativeThresholdLabel(val, defTh);
+            transState.thresholds[cur].priv = val;
             renderTransitions();
         });
 
@@ -2190,7 +2205,7 @@
 
         transDeltaSlider.addEventListener('input', (e) => {
             const val = parseFloat(e.target.value);
-            transDeltaDisplay.textContent = val.toFixed(1);
+            transDeltaDisplay.textContent = getQualitativeDeltaLabel(val, 1.0);
             transState.thresholds.graz_hns.delta = val;
             renderTransitions();
         });
@@ -2201,13 +2216,6 @@
             transState.thresholds[cur].pub = defTh;
             transState.thresholds[cur].priv = defTh;
             transState.thresholds[cur].split = false;
-            updateTransitionsUI();
-        });
-
-        btnMidpointPreset.addEventListener('click', () => {
-            const cur = transState.currentDiagram;
-            transState.thresholds[cur].pub = 5.0;
-            transState.thresholds[cur].priv = 5.0;
             updateTransitionsUI();
         });
 
