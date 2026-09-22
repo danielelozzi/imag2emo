@@ -1,2 +1,57 @@
 .DS_Store
 /labels
+
+# Python cache & artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# File di backup non utilizzati
+code_HNS/*backup*.py
+code_HNS/ConTraNet-backup.py
+code_arousal_valence/*backup*.py
+code_arousal_valence/ConTraNet-backup.py
+
+# Mappe di attivazione (calcolo accessorio)
+code_HNS/activationmaps.py
+code_arousal_valence/activationmaps.py
+
+# Calcoli accessori SMAPE
+code_HNS/smape.py
+code_HNS/smape_extended.py
+code_arousal_valence/smape.py
+
+# Calcoli accessori ed esplorazione distribuzioni/confronti etichette
+code_HNS/plot_graz_public_label_distr.py
+code_HNS/plot_graz_label_comparison.py
+code_HNS/plot_DEAP_label_comparison.py
+code_arousal_valence/plot_graz_public_label_distr.py
+code_arousal_valence/plot_graz_label_comparison.py
+code_arousal_valence/plot_DEAP_label_comparison.py
+
+# Calcoli e grafici accessori di transizione e quadranti
+code_HNS/analyze_quadrants.py
+code_HNS/plot_quadranti.py
+code_HNS/plot_quadranti_new.py
+code_HNS/plot_VA.py
+code_HNS/plot_VA_ver2.py
+code_HNS/plot_VA_ver3.py
+code_HNS/plot_VA_ver4.py
+code_HNS/plot_V_A_separate.py
+code_HNS/plot_V_A_separate_GRAZ.py
+code_HNS/plot_deap_VA.py
+code_arousal_valence/plot_VA.py
+code_arousal_valence/plot_HNS_ruotato.py
+
+# Immagini statiche esportate nelle cartelle di codice
+code_HNS/*.png
+code_arousal_valence/*.png
+
+# Fogli Excel e file accessori nelle cartelle di codice
+code_HNS/*.xls
+code_HNS/*.xlsx
+code_HNS/similar_image_pairs.csv
+code_arousal_valence/*.xls
+code_arousal_valence/*.xlsx
+code_arousal_valence/similar_image_pairs.csv
