@@ -1136,7 +1136,7 @@
                 if (values.length < 7) return; // Skip malformed or empty lines
 
                 const key = values[0].trim();
-                if (key) {
+                if (key && key.toLowerCase() !== 'class') {
                     // Columns: key, precision_mean, precision_std, recall_mean, recall_std, f1_mean, f1_std, support
                     const precision = parseFloat(values[1]);
                     const precision_std = parseFloat(values[2]);
@@ -1206,7 +1206,7 @@
             const container = document.getElementById(containerId);
             if (!container) return;
 
-            const classKeys = Object.keys(reportData).filter(k => !k.toLowerCase().includes('avg'));
+            const classKeys = Object.keys(reportData).filter(k => !k.toLowerCase().includes('avg') && k.toLowerCase() !== 'class');
             classKeys.sort((a, b) => parseFloat(a) - parseFloat(b));
 
             if (classKeys.length === 0) {
