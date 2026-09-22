@@ -55,3 +55,8 @@ code_HNS/similar_image_pairs.csv
 code_arousal_valence/*.xls
 code_arousal_valence/*.xlsx
 code_arousal_valence/similar_image_pairs.csv
+
+# MECnet
+
+code_HNS/MECnet.py
+code_arousal_valence/MECnet.py
