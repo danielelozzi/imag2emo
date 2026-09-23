@@ -888,6 +888,32 @@
                                 </button>
                             </div>
                         </div>
+
+                        <!-- Rating Distributions Section (Histograms) -->
+                        <div id="trans-histograms-section" class="mt-4 pt-3.5 border-t border-slate-200/80 space-y-2.5">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                                    <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                    </svg>
+                                    Score Distributions
+                                </span>
+                                <span class="text-[10px] font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                                    Threshold-Sliced
+                                </span>
+                            </div>
+
+                            <!-- Public Histogram Container -->
+                            <div id="hist-public-container" class="p-2.5 bg-slate-50/70 border border-slate-200/80 rounded-xl transition-all">
+                                <!-- Rendered dynamically -->
+                            </div>
+
+                            <!-- Private Histogram Container -->
+                            <div id="hist-private-container" class="p-2.5 bg-slate-50/70 border border-slate-200/80 rounded-xl transition-all">
+                                <!-- Rendered dynamically -->
+                            </div>
+                        </div>
+
                     </div>
 
                     <!-- Transition & Stability Summary Card -->
@@ -1533,6 +1559,8 @@
         const btnViewReport = document.getElementById('btn-view-report');
         const blockContingencyTable = document.getElementById('block-contingency-table');
         const blockClassificationReport = document.getElementById('block-classification-report');
+        const histPublicContainer = document.getElementById('hist-public-container');
+        const histPrivateContainer = document.getElementById('hist-private-container');
 
         const diagramTitleText = document.getElementById('diagram-title-text');
         const diagramSubtitleText = document.getElementById('diagram-subtitle-text');
@@ -1824,6 +1852,35 @@
                     `;
                 }
 
+                // Update Distribution Histograms
+                if (histPublicContainer && histPrivateContainer) {
+                    histPublicContainer.innerHTML = buildHistogramSVG({
+                        title: 'Public Ratings (Normative)',
+                        dataArr: pubArr,
+                        threshold: thPub,
+                        labelLow: labelLow,
+                        labelHigh: labelHigh,
+                        colorLow: '#3b82f6',
+                        colorHigh: '#10b981',
+                        minVal: 1.0,
+                        maxVal: 9.0,
+                        numBins: 16
+                    });
+
+                    histPrivateContainer.innerHTML = buildHistogramSVG({
+                        title: 'Private Ratings (Subjective)',
+                        dataArr: privArr,
+                        threshold: thPriv,
+                        labelLow: labelLow,
+                        labelHigh: labelHigh,
+                        colorLow: '#3b82f6',
+                        colorHigh: '#10b981',
+                        minVal: 1.0,
+                        maxVal: 9.0,
+                        numBins: 16
+                    });
+                }
+
                 // Render SVG
                 if (cfg.type === 'valence') {
                     diagramSvgContainer.innerHTML = buildValenceSVG({
@@ -2029,10 +2086,355 @@
                     `;
                 }
 
+                // Update Distribution Histograms for HNS
+                if (histPublicContainer && histPrivateContainer) {
+                    const hnsHist = buildHnsHistogramSVG({
+                        pubCounts: pubCounts,
+                        rhArr: rhArr,
+                        rsArr: rsArr,
+                        delta: delta,
+                        n: n
+                    });
+                    histPublicContainer.innerHTML = hnsHist.pubHtml;
+                    histPrivateContainer.innerHTML = hnsHist.privHtml;
+                }
+
                 diagramSvgContainer.innerHTML = buildHNSSVG({
                     trans, pcts, pubCounts, privCounts, n
                 });
             }
+        }
+
+        // SVG Histogram Builder: Dimensional (Valence & Arousal)
+        function buildHistogramSVG(options) {
+            const {
+                title, dataArr, threshold, labelLow, labelHigh,
+                colorLow = '#3b82f6', colorHigh = '#10b981',
+                minVal = 1.0, maxVal = 9.0, numBins = 16
+            } = options;
+
+            const binWidth = (maxVal - minVal) / numBins;
+            const bins = [];
+            for (let i = 0; i < numBins; i++) {
+                bins.push({
+                    start: minVal + i * binWidth,
+                    end: minVal + (i + 1) * binWidth,
+                    countLow: 0,
+                    countHigh: 0,
+                    total: 0
+                });
+            }
+
+            let totalLow = 0;
+            let totalHigh = 0;
+
+            for (let j = 0; j < dataArr.length; j++) {
+                const val = dataArr[j];
+                if (val < minVal || val > maxVal) continue;
+                let bIdx = Math.floor((val - minVal) / binWidth);
+                if (bIdx >= numBins) bIdx = numBins - 1;
+                if (bIdx < 0) bIdx = 0;
+
+                if (val < threshold) {
+                    bins[bIdx].countLow++;
+                    totalLow++;
+                } else {
+                    bins[bIdx].countHigh++;
+                    totalHigh++;
+                }
+                bins[bIdx].total++;
+            }
+
+            const n = totalLow + totalHigh;
+            const pctLow = n > 0 ? (totalLow / n) * 100 : 0;
+            const pctHigh = n > 0 ? (totalHigh / n) * 100 : 0;
+
+            let maxBinCount = 1;
+            for (let i = 0; i < numBins; i++) {
+                if (bins[i].total > maxBinCount) maxBinCount = bins[i].total;
+            }
+
+            const svgW = 380;
+            const svgH = 80;
+            const padL = 22;
+            const padR = 14;
+            const padT = 16;
+            const padB = 16;
+            const chartW = svgW - padL - padR;
+            const chartH = svgH - padT - padB;
+            const slotW = chartW / numBins;
+            const barW = Math.max(2, slotW - 1.5);
+
+            let barsSvg = '';
+            for (let i = 0; i < numBins; i++) {
+                const b = bins[i];
+                if (b.total === 0) continue;
+                const x = padL + i * slotW + (slotW - barW) / 2;
+                const totalH = (b.total / maxBinCount) * chartH;
+                const lowH = (b.countLow / maxBinCount) * chartH;
+                const highH = (b.countHigh / maxBinCount) * chartH;
+                const yTop = padT + (chartH - totalH);
+
+                if (b.countLow > 0 && b.countHigh === 0) {
+                    barsSvg += `<rect x="${x.toFixed(1)}" y="${yTop.toFixed(1)}" width="${barW.toFixed(1)}" height="${totalH.toFixed(1)}" rx="1.5" fill="${colorLow}" opacity="0.88">
+                        <title>${b.start.toFixed(1)}-${b.end.toFixed(1)}: ${b.total} (${labelLow})</title>
+                    </rect>`;
+                } else if (b.countHigh > 0 && b.countLow === 0) {
+                    barsSvg += `<rect x="${x.toFixed(1)}" y="${yTop.toFixed(1)}" width="${barW.toFixed(1)}" height="${totalH.toFixed(1)}" rx="1.5" fill="${colorHigh}" opacity="0.88">
+                        <title>${b.start.toFixed(1)}-${b.end.toFixed(1)}: ${b.total} (${labelHigh})</title>
+                    </rect>`;
+                } else {
+                    const yHigh = yTop;
+                    const yLow = yTop + highH;
+                    barsSvg += `
+                        <rect x="${x.toFixed(1)}" y="${yHigh.toFixed(1)}" width="${barW.toFixed(1)}" height="${highH.toFixed(1)}" rx="1" fill="${colorHigh}" opacity="0.88">
+                            <title>${b.start.toFixed(1)}-${b.end.toFixed(1)} High: ${b.countHigh}</title>
+                        </rect>
+                        <rect x="${x.toFixed(1)}" y="${yLow.toFixed(1)}" width="${barW.toFixed(1)}" height="${lowH.toFixed(1)}" rx="1" fill="${colorLow}" opacity="0.88">
+                            <title>${b.start.toFixed(1)}-${b.end.toFixed(1)} Low: ${b.countLow}</title>
+                        </rect>
+                    `;
+                }
+            }
+
+            const clampedTh = Math.max(minVal, Math.min(maxVal, threshold));
+            const thX = padL + ((clampedTh - minVal) / (maxVal - minVal)) * chartW;
+            const badgeX = Math.max(padL + 12, Math.min(padL + chartW - 12, thX));
+
+            const threshLine = `
+                <line x1="${thX.toFixed(1)}" y1="${padT - 3}" x2="${thX.toFixed(1)}" y2="${padT + chartH}" stroke="#ef4444" stroke-width="1.8" stroke-dasharray="3,2" />
+                <g transform="translate(${badgeX.toFixed(1)}, ${padT - 7})">
+                    <rect x="-13" y="-7" width="26" height="11" rx="2.5" fill="#ef4444" />
+                    <text x="0" y="1.5" text-anchor="middle" font-size="7.5" font-weight="bold" fill="#ffffff" font-family="monospace">${threshold.toFixed(1)}</text>
+                </g>
+            `;
+
+            const ticks = [1, 3, 5, 7, 9];
+            let ticksSvg = `<line x1="${padL}" y1="${padT + chartH}" x2="${padL + chartW}" y2="${padT + chartH}" stroke="#cbd5e1" stroke-width="1" />`;
+            ticks.forEach(tVal => {
+                const tx = padL + ((tVal - minVal) / (maxVal - minVal)) * chartW;
+                ticksSvg += `
+                    <line x1="${tx.toFixed(1)}" y1="${padT + chartH}" x2="${tx.toFixed(1)}" y2="${padT + chartH + 3}" stroke="#94a3b8" stroke-width="1" />
+                    <text x="${tx.toFixed(1)}" y="${padT + chartH + 11}" text-anchor="middle" font-size="7.5" font-family="monospace" fill="#64748b">${tVal}</text>
+                `;
+            });
+
+            return `
+                <div class="space-y-1">
+                    <div class="flex items-center justify-between text-xs mb-0.5">
+                        <span class="font-bold text-slate-700 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full ${title.includes('Public') ? 'bg-blue-600' : 'bg-sky-500'}"></span>
+                            ${title}
+                        </span>
+                        <div class="flex items-center gap-1 text-[10px] font-mono">
+                            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 font-semibold border border-blue-200/60">
+                                <span class="w-1.5 h-1.5 rounded-full" style="background-color: ${colorLow}"></span>
+                                ${labelLow}: ${pctLow.toFixed(1)}% (${totalLow})
+                            </span>
+                            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 font-semibold border border-emerald-200/60">
+                                <span class="w-1.5 h-1.5 rounded-full" style="background-color: ${colorHigh}"></span>
+                                ${labelHigh}: ${pctHigh.toFixed(1)}% (${totalHigh})
+                            </span>
+                        </div>
+                    </div>
+                    <svg viewBox="0 0 ${svgW} ${svgH}" class="w-full h-auto select-none overflow-visible" xmlns="http://www.w3.org/2000/svg">
+                        ${barsSvg}
+                        ${ticksSvg}
+                        ${threshLine}
+                    </svg>
+                </div>
+            `;
+        }
+
+        // SVG Histogram Builder: Categorical HNS
+        function buildHnsHistogramSVG(options) {
+            const { pubCounts, rhArr, rsArr, delta, n } = options;
+
+            // 1. Public discrete bars
+            const pubMax = Math.max(pubCounts.H, pubCounts.S, pubCounts.N, 1);
+            const pubHPct = ((pubCounts.H / n) * 100).toFixed(1);
+            const pubSPct = ((pubCounts.S / n) * 100).toFixed(1);
+            const pubNPct = ((pubCounts.N / n) * 100).toFixed(1);
+
+            const pubSvgW = 380, pubSvgH = 65;
+            const pubPadL = 30, pubPadR = 20, pubPadT = 12, pubPadB = 16;
+            const pubChartW = pubSvgW - pubPadL - pubPadR;
+            const pubChartH = pubSvgH - pubPadT - pubPadB;
+
+            const catClasses = [
+                { label: 'Happiness (H)', short: 'H', count: pubCounts.H, pct: pubHPct, color: '#10b981' },
+                { label: 'Sadness (S)', short: 'S', count: pubCounts.S, pct: pubSPct, color: '#f43f5e' },
+                { label: 'Neutral (N)', short: 'N', count: pubCounts.N, pct: pubNPct, color: '#64748b' }
+            ];
+
+            const catSlotW = pubChartW / 3;
+            const catBarW = 44;
+            let pubBarsSvg = `<line x1="${pubPadL}" y1="${pubPadT + pubChartH}" x2="${pubPadL + pubChartW}" y2="${pubPadT + pubChartH}" stroke="#cbd5e1" stroke-width="1" />`;
+
+            catClasses.forEach((c, idx) => {
+                const cx = pubPadL + idx * catSlotW + catSlotW / 2;
+                const bx = cx - catBarW / 2;
+                const bH = (c.count / pubMax) * pubChartH;
+                const bY = pubPadT + (pubChartH - bH);
+                pubBarsSvg += `
+                    <rect x="${bx.toFixed(1)}" y="${bY.toFixed(1)}" width="${catBarW}" height="${bH.toFixed(1)}" rx="3" fill="${c.color}" opacity="0.88">
+                        <title>${c.label}: ${c.count} (${c.pct}%)</title>
+                    </rect>
+                    <text x="${cx.toFixed(1)}" y="${(bY - 3).toFixed(1)}" text-anchor="middle" font-size="8" font-weight="bold" fill="${c.color}" font-family="monospace">${c.count} (${c.pct}%)</text>
+                    <text x="${cx.toFixed(1)}" y="${(pubPadT + pubChartH + 11).toFixed(1)}" text-anchor="middle" font-size="8.5" font-weight="bold" fill="#475569">${c.short}</text>
+                `;
+            });
+
+            const pubHtml = `
+                <div class="space-y-1">
+                    <div class="flex items-center justify-between text-xs mb-0.5">
+                        <span class="font-bold text-slate-700 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+                            Public Categories (Normative)
+                        </span>
+                        <span class="text-[11px] text-slate-500 font-mono font-medium">N = ${n}</span>
+                    </div>
+                    <svg viewBox="0 0 ${pubSvgW} ${pubSvgH}" class="w-full h-auto select-none overflow-visible" xmlns="http://www.w3.org/2000/svg">
+                        ${pubBarsSvg}
+                    </svg>
+                </div>
+            `;
+
+            // 2. Private Margin Difference (RH - RS)
+            const minDiff = -6.0;
+            const maxDiff = 6.0;
+            const numDiffBins = 13;
+            const diffBins = [];
+            for (let i = 0; i < numDiffBins; i++) {
+                diffBins.push({
+                    center: -6 + i,
+                    countS: 0,
+                    countN: 0,
+                    countH: 0,
+                    total: 0
+                });
+            }
+
+            let privH = 0, privS = 0, privN = 0;
+            for (let i = 0; i < n; i++) {
+                const d = rhArr[i] - rsArr[i];
+                let idx = Math.round(d - minDiff);
+                if (idx < 0) idx = 0;
+                if (idx >= numDiffBins) idx = numDiffBins - 1;
+
+                if (d > delta) {
+                    diffBins[idx].countH++;
+                    privH++;
+                } else if (d < -delta) {
+                    diffBins[idx].countS++;
+                    privS++;
+                } else {
+                    diffBins[idx].countN++;
+                    privN++;
+                }
+                diffBins[idx].total++;
+            }
+
+            const privHPct = ((privH / n) * 100).toFixed(1);
+            const privSPct = ((privS / n) * 100).toFixed(1);
+            const privNPct = ((privN / n) * 100).toFixed(1);
+
+            let maxDiffCount = 1;
+            for (let i = 0; i < numDiffBins; i++) {
+                if (diffBins[i].total > maxDiffCount) maxDiffCount = diffBins[i].total;
+            }
+
+            const privSvgW = 380, privSvgH = 80;
+            const privPadL = 22, privPadR = 14, privPadT = 16, privPadB = 16;
+            const privChartW = privSvgW - privPadL - privPadR;
+            const privChartH = privSvgH - privPadT - privPadB;
+            const privSlotW = privChartW / numDiffBins;
+            const privBarW = Math.max(3, privSlotW - 1.5);
+
+            let privBarsSvg = '';
+            for (let i = 0; i < numDiffBins; i++) {
+                const b = diffBins[i];
+                if (b.total === 0) continue;
+                const x = privPadL + i * privSlotW + (privSlotW - privBarW) / 2;
+                const totalH = (b.total / maxDiffCount) * privChartH;
+                const hS = (b.countS / maxDiffCount) * privChartH;
+                const hN = (b.countN / maxDiffCount) * privChartH;
+                const hH = (b.countH / maxDiffCount) * privChartH;
+                const yTop = privPadT + (privChartH - totalH);
+
+                let currY = yTop + totalH;
+                if (b.countS > 0) {
+                    currY -= hS;
+                    privBarsSvg += `<rect x="${x.toFixed(1)}" y="${currY.toFixed(1)}" width="${privBarW.toFixed(1)}" height="${hS.toFixed(1)}" rx="1" fill="#f43f5e" opacity="0.88">
+                        <title>Diff ${b.center}: Sadness (${b.countS})</title></rect>`;
+                }
+                if (b.countN > 0) {
+                    currY -= hN;
+                    privBarsSvg += `<rect x="${x.toFixed(1)}" y="${currY.toFixed(1)}" width="${privBarW.toFixed(1)}" height="${hN.toFixed(1)}" rx="1" fill="#64748b" opacity="0.88">
+                        <title>Diff ${b.center}: Neutral (${b.countN})</title></rect>`;
+                }
+                if (b.countH > 0) {
+                    currY -= hH;
+                    privBarsSvg += `<rect x="${x.toFixed(1)}" y="${currY.toFixed(1)}" width="${privBarW.toFixed(1)}" height="${hH.toFixed(1)}" rx="1" fill="#10b981" opacity="0.88">
+                        <title>Diff ${b.center}: Happiness (${b.countH})</title></rect>`;
+                }
+            }
+
+            const xMinusDelta = privPadL + ((-delta - minDiff) / (maxDiff - minDiff)) * privChartW;
+            const xPlusDelta = privPadL + ((delta - minDiff) / (maxDiff - minDiff)) * privChartW;
+
+            const deltaLines = `
+                <line x1="${xMinusDelta.toFixed(1)}" y1="${privPadT - 3}" x2="${xMinusDelta.toFixed(1)}" y2="${privPadT + privChartH}" stroke="#ef4444" stroke-width="1.6" stroke-dasharray="3,2" />
+                <g transform="translate(${xMinusDelta.toFixed(1)}, ${privPadT - 7})">
+                    <rect x="-14" y="-7" width="28" height="11" rx="2.5" fill="#ef4444" />
+                    <text x="0" y="1.5" text-anchor="middle" font-size="7.5" font-weight="bold" fill="#ffffff" font-family="monospace">-${delta.toFixed(1)}</text>
+                </g>
+
+                <line x1="${xPlusDelta.toFixed(1)}" y1="${privPadT - 3}" x2="${xPlusDelta.toFixed(1)}" y2="${privPadT + privChartH}" stroke="#ef4444" stroke-width="1.6" stroke-dasharray="3,2" />
+                <g transform="translate(${xPlusDelta.toFixed(1)}, ${privPadT - 7})">
+                    <rect x="-14" y="-7" width="28" height="11" rx="2.5" fill="#ef4444" />
+                    <text x="0" y="1.5" text-anchor="middle" font-size="7.5" font-weight="bold" fill="#ffffff" font-family="monospace">+${delta.toFixed(1)}</text>
+                </g>
+            `;
+
+            const diffTicks = [-6, -3, 0, 3, 6];
+            let diffTicksSvg = `<line x1="${privPadL}" y1="${privPadT + privChartH}" x2="${privPadL + privChartW}" y2="${privPadT + privChartH}" stroke="#cbd5e1" stroke-width="1" />`;
+            diffTicks.forEach(tVal => {
+                const tx = privPadL + ((tVal - minDiff) / (maxDiff - minDiff)) * privChartW;
+                diffTicksSvg += `
+                    <line x1="${tx.toFixed(1)}" y1="${privPadT + privChartH}" x2="${tx.toFixed(1)}" y2="${privPadT + privChartH + 3}" stroke="#94a3b8" stroke-width="1" />
+                    <text x="${tx.toFixed(1)}" y="${privPadT + privChartH + 11}" text-anchor="middle" font-size="7.5" font-family="monospace" fill="#64748b">${tVal > 0 ? '+' + tVal : tVal}</text>
+                `;
+            });
+
+            const privHtml = `
+                <div class="space-y-1">
+                    <div class="flex items-center justify-between text-xs mb-0.5">
+                        <span class="font-bold text-slate-700 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+                            Private Margin (Rate<sub>H</sub> - Rate<sub>S</sub>)
+                        </span>
+                        <div class="flex items-center gap-1 text-[10px] font-mono">
+                            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-rose-50 text-rose-700 font-semibold border border-rose-200/60">
+                                <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>S: ${privSPct}% (${privS})
+                            </span>
+                            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 font-semibold border border-slate-200/60">
+                                <span class="w-1.5 h-1.5 rounded-full bg-slate-500"></span>N: ${privNPct}% (${privN})
+                            </span>
+                            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 font-semibold border border-emerald-200/60">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>H: ${privHPct}% (${privH})
+                            </span>
+                        </div>
+                    </div>
+                    <svg viewBox="0 0 ${privSvgW} ${privSvgH}" class="w-full h-auto select-none overflow-visible" xmlns="http://www.w3.org/2000/svg">
+                        ${privBarsSvg}
+                        ${diffTicksSvg}
+                        ${deltaLines}
+                    </svg>
+                </div>
+            `;
+
+            return { pubHtml, privHtml };
         }
 
         // SVG Builder: Valence
