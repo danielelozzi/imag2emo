@@ -810,7 +810,7 @@
                                     <span id="trans-thresh-display"
                                         class="font-bold text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded text-sm border border-blue-200">Default</span>
                                 </div>
-                                <input id="trans-thresh-slider" type="range" min="1.0" max="9.0" step="0.1" value="4.5"
+                                <input id="trans-thresh-slider" type="range" min="1.0" max="9.0" step="0.1" value="5.0"
                                     class="w-full accent-blue-600 cursor-pointer">
                                 <div class="flex justify-between text-[11px] text-slate-400 mt-1">
                                     <span>&larr; Below Default</span>
@@ -828,7 +828,7 @@
                                                 class="text-xs text-blue-500 font-mono">(t<sub>pub</sub>)</span></label>
                                         <span id="trans-pub-display" class="font-semibold text-blue-600">Default</span>
                                     </div>
-                                    <input id="trans-pub-slider" type="range" min="1.0" max="9.0" step="0.1" value="4.5"
+                                    <input id="trans-pub-slider" type="range" min="1.0" max="9.0" step="0.1" value="5.0"
                                         class="w-full accent-blue-600 cursor-pointer">
                                 </div>
                                 <div>
@@ -839,7 +839,7 @@
                                         <span id="trans-priv-display" class="font-semibold text-sky-600">Default</span>
                                     </div>
                                     <input id="trans-priv-slider" type="range" min="1.0" max="9.0" step="0.1"
-                                        value="4.5" class="w-full accent-sky-500 cursor-pointer">
+                                        value="5.0" class="w-full accent-sky-500 cursor-pointer">
                                 </div>
                             </div>
 
@@ -873,7 +873,7 @@
                                     <span id="trans-delta-display"
                                         class="font-bold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded text-sm border border-emerald-200">Default</span>
                                 </div>
-                                <input id="trans-delta-slider" type="range" min="0.5" max="4.0" step="0.5" value="1.0"
+                                <input id="trans-delta-slider" type="range" min="0.5" max="4.0" step="0.5" value="2.0"
                                     class="w-full accent-emerald-600 cursor-pointer">
                                 <p class="text-[11px] text-slate-500 mt-1 leading-snug">
                                     Private category: Happiness if (Rate<sub>H</sub> - Rate<sub>S</sub>) &ge; &Delta;,
@@ -898,21 +898,26 @@
                                 class="text-xs font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-600">100%
                                 Normalized</span>
                         </div>
-                        <div class="grid grid-cols-3 gap-2.5 text-center mb-4">
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-center mb-4">
                             <div class="p-2.5 bg-emerald-50 border border-emerald-100 rounded-lg">
                                 <div class="text-[11px] text-emerald-700 font-medium">Stability</div>
-                                <div id="trans-stat-stability" class="text-lg font-black text-emerald-700 mt-0.5">78.8%
+                                <div id="trans-stat-stability" class="text-base font-black text-emerald-700 mt-0.5">78.4%
                                 </div>
                             </div>
                             <div class="p-2.5 bg-rose-50 border border-rose-100 rounded-lg">
                                 <div class="text-[11px] text-rose-700 font-medium">Transition</div>
-                                <div id="trans-stat-transition" class="text-lg font-black text-rose-700 mt-0.5">21.2%
+                                <div id="trans-stat-transition" class="text-base font-black text-rose-700 mt-0.5">21.6%
+                                </div>
+                            </div>
+                            <div class="p-2.5 bg-blue-50 border border-blue-100 rounded-lg">
+                                <div class="text-[11px] text-blue-700 font-medium">SMAPE Error</div>
+                                <div id="trans-stat-smape" class="text-base font-black text-blue-700 mt-0.5">43.18%
                                 </div>
                             </div>
                             <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-lg">
                                 <div class="text-[11px] text-slate-600 font-medium">Distribution</div>
-                                <div id="trans-stat-balance" class="text-xs font-bold text-slate-800 mt-1.5">21.2% :
-                                    78.8%</div>
+                                <div id="trans-stat-balance" class="text-xs font-bold text-slate-800 mt-1.5">50.0% :
+                                    50.0%</div>
                             </div>
                         </div>
 
@@ -1450,11 +1455,11 @@
         const transState = {
             currentDiagram: 'deap_valence',
             thresholds: {
-                deap_valence: { pub: 4.5, priv: 4.5, split: false },
+                deap_valence: { pub: 5.0, priv: 5.0, split: false },
                 deap_arousal: { pub: 5.0, priv: 5.0, split: false },
-                graz_valence: { pub: 4.5, priv: 4.5, split: false },
-                graz_arousal: { pub: 5.5, priv: 5.5, split: false },
-                graz_hns: { delta: 1.0 }
+                graz_valence: { pub: 5.0, priv: 5.0, split: false },
+                graz_arousal: { pub: 5.0, priv: 5.0, split: false },
+                graz_hns: { delta: 2.0 }
             }
         };
 
@@ -1482,6 +1487,7 @@
 
         const transStatStability = document.getElementById('trans-stat-stability');
         const transStatTransition = document.getElementById('trans-stat-transition');
+        const transStatSmape = document.getElementById('trans-stat-smape');
         const transStatBalance = document.getElementById('trans-stat-balance');
         const transSampleCount = document.getElementById('trans-sample-count');
         const transContingencyTable = document.getElementById('trans-contingency-table');
@@ -1499,7 +1505,7 @@
                     title: 'Public → Private - VALENCE',
                     subtitle: 'DEAP Dataset • Relative Distribution (%)',
                     badge: 'DEAP • Valence',
-                    defaultTh: 4.5
+                    defaultTh: 5.0
                 },
                 deap_arousal: {
                     type: 'arousal',
@@ -1515,7 +1521,7 @@
                     title: 'Public → Private - VALENCE',
                     subtitle: 'Imag2Emo (Graz) Dataset • Relative Distribution (%)',
                     badge: 'Imag2Emo • Valence',
-                    defaultTh: 4.5
+                    defaultTh: 5.0
                 },
                 graz_arousal: {
                     type: 'arousal',
@@ -1523,7 +1529,7 @@
                     title: 'Public → Private - AROUSAL',
                     subtitle: 'Imag2Emo (Graz) Dataset • Relative Distribution (%)',
                     badge: 'Imag2Emo • Arousal',
-                    defaultTh: 5.5
+                    defaultTh: 5.0
                 },
                 graz_hns: {
                     type: 'hns',
@@ -1531,7 +1537,7 @@
                     title: 'Emotional flow diagram: from Public to Private',
                     subtitle: 'Imag2Emo (Graz) Dataset • Categorical HNS (%)',
                     badge: 'Imag2Emo • HNS',
-                    defaultDelta: 1.0
+                    defaultDelta: 2.0
                 }
             };
             return configs[id];
@@ -1544,7 +1550,7 @@
             return 'Above Default';
         }
 
-        function getQualitativeDeltaLabel(val, defDelta = 1.0) {
+        function getQualitativeDeltaLabel(val, defDelta = 2.0) {
             const diff = Number(val) - Number(defDelta);
             if (Math.abs(diff) < 0.05) return 'Default';
             if (diff < 0) return 'Below Default';
@@ -1572,7 +1578,7 @@
                 transHnsControls.classList.remove('hidden');
                 const st = transState.thresholds.graz_hns;
                 transDeltaSlider.value = st.delta;
-                transDeltaDisplay.textContent = getQualitativeDeltaLabel(st.delta, cfg.defaultDelta || 1.0);
+                transDeltaDisplay.textContent = getQualitativeDeltaLabel(st.delta, cfg.defaultDelta || 2.0);
             } else {
                 transHnsControls.classList.add('hidden');
                 transDimControls.classList.remove('hidden');
@@ -1649,6 +1655,7 @@
                 // Update metrics cards
                 transStatStability.textContent = stabilityPct.toFixed(1) + '%';
                 transStatTransition.textContent = transitionPct.toFixed(1) + '%';
+                if (transStatSmape) transStatSmape.textContent = (transitionPct * 2).toFixed(2) + '%';
                 transStatBalance.textContent = balanceStr;
                 transSampleCount.textContent = '100% Normalized';
 
@@ -1763,6 +1770,7 @@
 
                 transStatStability.textContent = stabilityPct.toFixed(1) + '%';
                 transStatTransition.textContent = transitionPct.toFixed(1) + '%';
+                if (transStatSmape) transStatSmape.textContent = 'N/A';
                 transStatBalance.textContent = `${pubHPct}% : ${pubSPct}% : ${pubNPct}%`;
                 transSampleCount.textContent = '100% Normalized';
 
@@ -2205,7 +2213,7 @@
 
         transDeltaSlider.addEventListener('input', (e) => {
             const val = parseFloat(e.target.value);
-            transDeltaDisplay.textContent = getQualitativeDeltaLabel(val, 1.0);
+            transDeltaDisplay.textContent = getQualitativeDeltaLabel(val, 2.0);
             transState.thresholds.graz_hns.delta = val;
             renderTransitions();
         });
@@ -2220,7 +2228,7 @@
         });
 
         btnHnsPaperPreset.addEventListener('click', () => {
-            transState.thresholds.graz_hns.delta = 1.0;
+            transState.thresholds.graz_hns.delta = 2.0;
             updateTransitionsUI();
         });
 
