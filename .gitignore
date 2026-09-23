@@ -7,6 +7,9 @@ __pycache__/
 *$py.class
 *.so
 
+# main
+generate_data.py
+
 # File di backup non utilizzati
 code_HNS/*backup*.py
 code_HNS/ConTraNet-backup.py
