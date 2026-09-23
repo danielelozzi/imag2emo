@@ -921,13 +921,50 @@
                             </div>
                         </div>
 
-                        <!-- Contingency Matrix Table -->
-                        <div>
-                            <div class="text-xs font-semibold text-slate-500 mb-1.5">
-                                Contingency Matrix (Public rows &rarr; Private columns)
+                        <!-- Detailed Tables Section: Toggle between Contingency Matrix and Classification Report -->
+                        <div class="mt-4 pt-3 border-t border-slate-200/80">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs font-bold text-slate-700 uppercase tracking-wider">Detailed Analysis</span>
+                                <div class="inline-flex p-0.5 rounded-lg bg-slate-100 border border-slate-200 text-xs">
+                                    <button id="btn-view-both" class="analysis-view-btn px-2.5 py-1 rounded-md font-bold text-blue-700 bg-white shadow-xs transition">
+                                        Both
+                                    </button>
+                                    <button id="btn-view-contingency" class="analysis-view-btn px-2.5 py-1 rounded-md font-medium text-slate-600 hover:text-slate-900 transition">
+                                        Contingency
+                                    </button>
+                                    <button id="btn-view-report" class="analysis-view-btn px-2.5 py-1 rounded-md font-medium text-slate-600 hover:text-slate-900 transition">
+                                        Report
+                                    </button>
+                                </div>
                             </div>
-                            <div id="trans-contingency-table" class="overflow-x-auto text-xs">
-                                <!-- Populated dynamically -->
+
+                            <!-- Contingency Matrix Block -->
+                            <div id="block-contingency-table" class="space-y-1.5 mb-3">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-semibold text-slate-600">Contingency Matrix (Public rows &rarr; Private cols)</span>
+                                    <span class="text-[10px] text-slate-400">Row normalized (%)</span>
+                                </div>
+                                <div id="trans-contingency-table" class="overflow-x-auto text-xs">
+                                    <!-- Populated dynamically -->
+                                </div>
+                            </div>
+
+                            <!-- Human Classification Report Block -->
+                            <div id="block-classification-report" class="space-y-1.5">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+                                        <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                        </svg>
+                                        Human Classification Report
+                                    </span>
+                                    <span class="text-[10px] font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                                        Ground Truth = Public
+                                    </span>
+                                </div>
+                                <div id="trans-classification-report" class="overflow-x-auto text-xs">
+                                    <!-- Populated dynamically -->
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1489,8 +1526,13 @@
         const transStatTransition = document.getElementById('trans-stat-transition');
         const transStatSmape = document.getElementById('trans-stat-smape');
         const transStatBalance = document.getElementById('trans-stat-balance');
-        const transSampleCount = document.getElementById('trans-sample-count');
         const transContingencyTable = document.getElementById('trans-contingency-table');
+        const transClassificationReport = document.getElementById('trans-classification-report');
+        const btnViewBoth = document.getElementById('btn-view-both');
+        const btnViewContingency = document.getElementById('btn-view-contingency');
+        const btnViewReport = document.getElementById('btn-view-report');
+        const blockContingencyTable = document.getElementById('block-contingency-table');
+        const blockClassificationReport = document.getElementById('block-classification-report');
 
         const diagramTitleText = document.getElementById('diagram-title-text');
         const diagramSubtitleText = document.getElementById('diagram-subtitle-text');
@@ -1706,6 +1748,82 @@
                     </table>
                 `;
 
+                // Update Human Classification Report
+                const prec0 = privLow > 0 ? (c00 / privLow) : 0;
+                const rec0 = pubLow > 0 ? (c00 / pubLow) : 0;
+                const f1_0 = (prec0 + rec0) > 0 ? (2 * prec0 * rec0 / (prec0 + rec0)) : 0;
+
+                const prec1 = privHigh > 0 ? (c11 / privHigh) : 0;
+                const rec1 = pubHigh > 0 ? (c11 / pubHigh) : 0;
+                const f1_1 = (prec1 + rec1) > 0 ? (2 * prec1 * rec1 / (prec1 + rec1)) : 0;
+
+                const acc = n > 0 ? ((c00 + c11) / n) : 0;
+
+                const macroPrec = (prec0 + prec1) / 2;
+                const macroRec = (rec0 + rec1) / 2;
+                const macroF1 = (f1_0 + f1_1) / 2;
+
+                const weightedPrec = n > 0 ? ((prec0 * pubLow + prec1 * pubHigh) / n) : 0;
+                const weightedRec = n > 0 ? ((rec0 * pubLow + rec1 * pubHigh) / n) : 0;
+                const weightedF1 = n > 0 ? ((f1_0 * pubLow + f1_1 * pubHigh) / n) : 0;
+
+                const nameLow = (cfg.type === 'valence') ? 'Low Valence' : 'Low Arousal';
+                const nameHigh = (cfg.type === 'valence') ? 'High Valence' : 'High Arousal';
+
+                if (transClassificationReport) {
+                    transClassificationReport.innerHTML = `
+                        <table class="w-full border-collapse border border-slate-200 text-center font-mono text-xs">
+                            <thead class="bg-slate-100 text-slate-700 font-sans">
+                                <tr>
+                                    <th class="p-1.5 border border-slate-200 font-semibold text-left">Class</th>
+                                    <th class="p-1.5 border border-slate-200 font-semibold">Precision</th>
+                                    <th class="p-1.5 border border-slate-200 font-semibold">Recall</th>
+                                    <th class="p-1.5 border border-slate-200 font-semibold">F1-Score</th>
+                                    <th class="p-1.5 border border-slate-200 font-semibold">Support</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="p-1.5 border border-slate-200 font-sans font-medium text-left bg-slate-50">${nameLow} (${labelLow})</td>
+                                    <td class="p-1.5 border border-slate-200">${prec0.toFixed(2)}</td>
+                                    <td class="p-1.5 border border-slate-200">${rec0.toFixed(2)}</td>
+                                    <td class="p-1.5 border border-slate-200 font-bold text-slate-800">${f1_0.toFixed(2)}</td>
+                                    <td class="p-1.5 border border-slate-200 text-slate-600">${pubLow}</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-1.5 border border-slate-200 font-sans font-medium text-left bg-slate-50">${nameHigh} (${labelHigh})</td>
+                                    <td class="p-1.5 border border-slate-200">${prec1.toFixed(2)}</td>
+                                    <td class="p-1.5 border border-slate-200">${rec1.toFixed(2)}</td>
+                                    <td class="p-1.5 border border-slate-200 font-bold text-slate-800">${f1_1.toFixed(2)}</td>
+                                    <td class="p-1.5 border border-slate-200 text-slate-600">${pubHigh}</td>
+                                </tr>
+                                <tr class="bg-blue-50/50">
+                                    <td class="p-1.5 border border-slate-200 font-sans font-semibold text-left text-blue-900">Accuracy</td>
+                                    <td class="p-1.5 border border-slate-200 text-slate-400" colspan="2">&mdash;</td>
+                                    <td class="p-1.5 border border-slate-200 font-black text-blue-900">${acc.toFixed(2)}</td>
+                                    <td class="p-1.5 border border-slate-200 font-medium text-slate-700">${n}</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-1.5 border border-slate-200 font-sans text-left text-slate-600">Macro avg</td>
+                                    <td class="p-1.5 border border-slate-200">${macroPrec.toFixed(2)}</td>
+                                    <td class="p-1.5 border border-slate-200">${macroRec.toFixed(2)}</td>
+                                    <td class="p-1.5 border border-slate-200 font-bold text-slate-700">${macroF1.toFixed(2)}</td>
+                                    <td class="p-1.5 border border-slate-200 text-slate-500">${n}</td>
+                                </tr>
+                            </tbody>
+                            <tfoot class="bg-slate-100 font-semibold text-slate-700">
+                                <tr>
+                                    <td class="p-1.5 border border-slate-200 font-sans text-left bg-slate-200/60">Weighted avg</td>
+                                    <td class="p-1.5 border border-slate-200 font-semibold">${weightedPrec.toFixed(2)}</td>
+                                    <td class="p-1.5 border border-slate-200 font-semibold">${weightedRec.toFixed(2)}</td>
+                                    <td class="p-1.5 border border-slate-200 font-black text-slate-900">${weightedF1.toFixed(2)}</td>
+                                    <td class="p-1.5 border border-slate-200 bg-slate-200 font-black">${n}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    `;
+                }
+
                 // Render SVG
                 if (cfg.type === 'valence') {
                     diagramSvgContainer.innerHTML = buildValenceSVG({
@@ -1820,6 +1938,96 @@
                         </tfoot>
                     </table>
                 `;
+
+                // Update Human Classification Report for HNS
+                const hnsClasses = [
+                    { key: 'H', label: 'Happiness (H)', color: 'text-emerald-700' },
+                    { key: 'S', label: 'Sadness (S)', color: 'text-rose-700' },
+                    { key: 'N', label: 'Neutral (N)', color: 'text-slate-700' }
+                ];
+
+                const repMetrics = {};
+                let totalCorrect = 0;
+                let sumPrec = 0, sumRec = 0, sumF1 = 0;
+                let wSumPrec = 0, wSumRec = 0, wSumF1 = 0;
+
+                hnsClasses.forEach(c => {
+                    const tp = trans[`${c.key},${c.key}`] || 0;
+                    const sup = pubCounts[c.key] || 0;
+                    const pred = privCounts[c.key] || 0;
+                    const prec = pred > 0 ? (tp / pred) : 0;
+                    const rec = sup > 0 ? (tp / sup) : 0;
+                    const f1 = (prec + rec) > 0 ? (2 * prec * rec / (prec + rec)) : 0;
+
+                    repMetrics[c.key] = { prec, rec, f1, sup };
+                    totalCorrect += tp;
+
+                    sumPrec += prec;
+                    sumRec += rec;
+                    sumF1 += f1;
+
+                    wSumPrec += prec * sup;
+                    wSumRec += rec * sup;
+                    wSumF1 += f1 * sup;
+                });
+
+                const acc = n > 0 ? (totalCorrect / n) : 0;
+                const macroPrec = sumPrec / 3;
+                const macroRec = sumRec / 3;
+                const macroF1 = sumF1 / 3;
+
+                const weightedPrec = n > 0 ? (wSumPrec / n) : 0;
+                const weightedRec = n > 0 ? (wSumRec / n) : 0;
+                const weightedF1 = n > 0 ? (wSumF1 / n) : 0;
+
+                if (transClassificationReport) {
+                    transClassificationReport.innerHTML = `
+                        <table class="w-full border-collapse border border-slate-200 text-center font-mono text-xs">
+                            <thead class="bg-slate-100 text-slate-700 font-sans">
+                                <tr>
+                                    <th class="p-1.5 border border-slate-200 font-semibold text-left">Class</th>
+                                    <th class="p-1.5 border border-slate-200 font-semibold">Precision</th>
+                                    <th class="p-1.5 border border-slate-200 font-semibold">Recall</th>
+                                    <th class="p-1.5 border border-slate-200 font-semibold">F1-Score</th>
+                                    <th class="p-1.5 border border-slate-200 font-semibold">Support</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${hnsClasses.map(c => `
+                                    <tr>
+                                        <td class="p-1.5 border border-slate-200 font-sans font-medium text-left bg-slate-50 ${c.color}">${c.label}</td>
+                                        <td class="p-1.5 border border-slate-200">${repMetrics[c.key].prec.toFixed(2)}</td>
+                                        <td class="p-1.5 border border-slate-200">${repMetrics[c.key].rec.toFixed(2)}</td>
+                                        <td class="p-1.5 border border-slate-200 font-bold text-slate-800">${repMetrics[c.key].f1.toFixed(2)}</td>
+                                        <td class="p-1.5 border border-slate-200 text-slate-600">${repMetrics[c.key].sup}</td>
+                                    </tr>
+                                `).join('')}
+                                <tr class="bg-blue-50/50">
+                                    <td class="p-1.5 border border-slate-200 font-sans font-semibold text-left text-blue-900">Accuracy</td>
+                                    <td class="p-1.5 border border-slate-200 text-slate-400" colspan="2">&mdash;</td>
+                                    <td class="p-1.5 border border-slate-200 font-black text-blue-900">${acc.toFixed(2)}</td>
+                                    <td class="p-1.5 border border-slate-200 font-medium text-slate-700">${n}</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-1.5 border border-slate-200 font-sans text-left text-slate-600">Macro avg</td>
+                                    <td class="p-1.5 border border-slate-200">${macroPrec.toFixed(2)}</td>
+                                    <td class="p-1.5 border border-slate-200">${macroRec.toFixed(2)}</td>
+                                    <td class="p-1.5 border border-slate-200 font-bold text-slate-700">${macroF1.toFixed(2)}</td>
+                                    <td class="p-1.5 border border-slate-200 text-slate-500">${n}</td>
+                                </tr>
+                            </tbody>
+                            <tfoot class="bg-slate-100 font-semibold text-slate-700">
+                                <tr>
+                                    <td class="p-1.5 border border-slate-200 font-sans text-left bg-slate-200/60">Weighted avg</td>
+                                    <td class="p-1.5 border border-slate-200 font-semibold">${weightedPrec.toFixed(2)}</td>
+                                    <td class="p-1.5 border border-slate-200 font-semibold">${weightedRec.toFixed(2)}</td>
+                                    <td class="p-1.5 border border-slate-200 font-black text-slate-900">${weightedF1.toFixed(2)}</td>
+                                    <td class="p-1.5 border border-slate-200 bg-slate-200 font-black">${n}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    `;
+                }
 
                 diagramSvgContainer.innerHTML = buildHNSSVG({
                     trans, pcts, pubCounts, privCounts, n
@@ -2246,6 +2454,34 @@
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
         });
+
+        // Detailed analysis view toggle (Both, Contingency, Report)
+        function setAnalysisViewMode(mode) {
+            if (!blockContingencyTable || !blockClassificationReport) return;
+            if (mode === 'both') {
+                blockContingencyTable.classList.remove('hidden');
+                blockClassificationReport.classList.remove('hidden');
+                if (btnViewBoth) btnViewBoth.className = 'analysis-view-btn px-2.5 py-1 rounded-md font-bold text-blue-700 bg-white shadow-xs transition';
+                if (btnViewContingency) btnViewContingency.className = 'analysis-view-btn px-2.5 py-1 rounded-md font-medium text-slate-600 hover:text-slate-900 bg-transparent transition';
+                if (btnViewReport) btnViewReport.className = 'analysis-view-btn px-2.5 py-1 rounded-md font-medium text-slate-600 hover:text-slate-900 bg-transparent transition';
+            } else if (mode === 'contingency') {
+                blockContingencyTable.classList.remove('hidden');
+                blockClassificationReport.classList.add('hidden');
+                if (btnViewBoth) btnViewBoth.className = 'analysis-view-btn px-2.5 py-1 rounded-md font-medium text-slate-600 hover:text-slate-900 bg-transparent transition';
+                if (btnViewContingency) btnViewContingency.className = 'analysis-view-btn px-2.5 py-1 rounded-md font-bold text-blue-700 bg-white shadow-xs transition';
+                if (btnViewReport) btnViewReport.className = 'analysis-view-btn px-2.5 py-1 rounded-md font-medium text-slate-600 hover:text-slate-900 bg-transparent transition';
+            } else if (mode === 'report') {
+                blockContingencyTable.classList.add('hidden');
+                blockClassificationReport.classList.remove('hidden');
+                if (btnViewBoth) btnViewBoth.className = 'analysis-view-btn px-2.5 py-1 rounded-md font-medium text-slate-600 hover:text-slate-900 bg-transparent transition';
+                if (btnViewContingency) btnViewContingency.className = 'analysis-view-btn px-2.5 py-1 rounded-md font-medium text-slate-600 hover:text-slate-900 bg-transparent transition';
+                if (btnViewReport) btnViewReport.className = 'analysis-view-btn px-2.5 py-1 rounded-md font-bold text-blue-700 bg-white shadow-xs transition';
+            }
+        }
+
+        if (btnViewBoth) btnViewBoth.addEventListener('click', () => setAnalysisViewMode('both'));
+        if (btnViewContingency) btnViewContingency.addEventListener('click', () => setAnalysisViewMode('contingency'));
+        if (btnViewReport) btnViewReport.addEventListener('click', () => setAnalysisViewMode('report'));
 
         // Initialize transitions UI on page load
         updateTransitionsUI();
