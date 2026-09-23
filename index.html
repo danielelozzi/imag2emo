@@ -1552,6 +1552,7 @@
         const transStatTransition = document.getElementById('trans-stat-transition');
         const transStatSmape = document.getElementById('trans-stat-smape');
         const transStatBalance = document.getElementById('trans-stat-balance');
+        const transSampleCount = document.getElementById('trans-sample-count');
         const transContingencyTable = document.getElementById('trans-contingency-table');
         const transClassificationReport = document.getElementById('trans-classification-report');
         const btnViewBoth = document.getElementById('btn-view-both');
@@ -1727,7 +1728,7 @@
                 transStatTransition.textContent = transitionPct.toFixed(1) + '%';
                 if (transStatSmape) transStatSmape.textContent = (transitionPct * 2).toFixed(2) + '%';
                 transStatBalance.textContent = balanceStr;
-                transSampleCount.textContent = '100% Normalized';
+                if (transSampleCount) transSampleCount.textContent = '100% Normalized';
 
                 // Update Contingency Matrix
                 const labelLow = (cfg.type === 'valence') ? 'LV' : 'LA';
@@ -1947,7 +1948,7 @@
                 transStatTransition.textContent = transitionPct.toFixed(1) + '%';
                 if (transStatSmape) transStatSmape.textContent = 'N/A';
                 transStatBalance.textContent = `${pubHPct}% : ${pubSPct}% : ${pubNPct}%`;
-                transSampleCount.textContent = '100% Normalized';
+                if (transSampleCount) transSampleCount.textContent = '100% Normalized';
 
                 // Contingency Table
                 transContingencyTable.innerHTML = `
@@ -2165,41 +2166,43 @@
             const slotW = chartW / numBins;
             const barW = Math.max(2, slotW - 1.5);
 
+            const clampedTh = Math.max(minVal, Math.min(maxVal, threshold));
+            const thX = padL + ((clampedTh - minVal) / (maxVal - minVal)) * chartW;
+            const badgeX = Math.max(padL + 14, Math.min(padL + chartW - 14, thX));
+
             let barsSvg = '';
             for (let i = 0; i < numBins; i++) {
                 const b = bins[i];
                 if (b.total === 0) continue;
-                const x = padL + i * slotW + (slotW - barW) / 2;
+                const xStart = padL + i * slotW + (slotW - barW) / 2;
+                const xEnd = xStart + barW;
                 const totalH = (b.total / maxBinCount) * chartH;
-                const lowH = (b.countLow / maxBinCount) * chartH;
-                const highH = (b.countHigh / maxBinCount) * chartH;
                 const yTop = padT + (chartH - totalH);
 
-                if (b.countLow > 0 && b.countHigh === 0) {
-                    barsSvg += `<rect x="${x.toFixed(1)}" y="${yTop.toFixed(1)}" width="${barW.toFixed(1)}" height="${totalH.toFixed(1)}" rx="1.5" fill="${colorLow}" opacity="0.88">
-                        <title>${b.start.toFixed(1)}-${b.end.toFixed(1)}: ${b.total} (${labelLow})</title>
+                if (xEnd <= thX) {
+                    // Completely to the left of the threshold: Low color (Blue)
+                    barsSvg += `<rect x="${xStart.toFixed(1)}" y="${yTop.toFixed(1)}" width="${barW.toFixed(1)}" height="${totalH.toFixed(1)}" rx="1.5" fill="${colorLow}" opacity="0.88">
+                        <title>${b.start.toFixed(1)}-${b.end.toFixed(1)}: ${b.total} items (${labelLow})</title>
                     </rect>`;
-                } else if (b.countHigh > 0 && b.countLow === 0) {
-                    barsSvg += `<rect x="${x.toFixed(1)}" y="${yTop.toFixed(1)}" width="${barW.toFixed(1)}" height="${totalH.toFixed(1)}" rx="1.5" fill="${colorHigh}" opacity="0.88">
-                        <title>${b.start.toFixed(1)}-${b.end.toFixed(1)}: ${b.total} (${labelHigh})</title>
+                } else if (xStart >= thX) {
+                    // Completely to the right of the threshold: High color (Emerald)
+                    barsSvg += `<rect x="${xStart.toFixed(1)}" y="${yTop.toFixed(1)}" width="${barW.toFixed(1)}" height="${totalH.toFixed(1)}" rx="1.5" fill="${colorHigh}" opacity="0.88">
+                        <title>${b.start.toFixed(1)}-${b.end.toFixed(1)}: ${b.total} items (${labelHigh})</title>
                     </rect>`;
                 } else {
-                    const yHigh = yTop;
-                    const yLow = yTop + highH;
+                    // Sliced by the threshold line!
+                    const wLow = Math.max(0.5, thX - xStart);
+                    const wHigh = Math.max(0.5, xEnd - thX);
                     barsSvg += `
-                        <rect x="${x.toFixed(1)}" y="${yHigh.toFixed(1)}" width="${barW.toFixed(1)}" height="${highH.toFixed(1)}" rx="1" fill="${colorHigh}" opacity="0.88">
-                            <title>${b.start.toFixed(1)}-${b.end.toFixed(1)} High: ${b.countHigh}</title>
+                        <rect x="${xStart.toFixed(1)}" y="${yTop.toFixed(1)}" width="${wLow.toFixed(1)}" height="${totalH.toFixed(1)}" rx="1" fill="${colorLow}" opacity="0.88">
+                            <title>${b.start.toFixed(1)}-${b.end.toFixed(1)}: ${b.total} items (${labelLow})</title>
                         </rect>
-                        <rect x="${x.toFixed(1)}" y="${yLow.toFixed(1)}" width="${barW.toFixed(1)}" height="${lowH.toFixed(1)}" rx="1" fill="${colorLow}" opacity="0.88">
-                            <title>${b.start.toFixed(1)}-${b.end.toFixed(1)} Low: ${b.countLow}</title>
+                        <rect x="${thX.toFixed(1)}" y="${yTop.toFixed(1)}" width="${wHigh.toFixed(1)}" height="${totalH.toFixed(1)}" rx="1" fill="${colorHigh}" opacity="0.88">
+                            <title>${b.start.toFixed(1)}-${b.end.toFixed(1)}: ${b.total} items (${labelHigh})</title>
                         </rect>
                     `;
                 }
             }
-
-            const clampedTh = Math.max(minVal, Math.min(maxVal, threshold));
-            const thX = padL + ((clampedTh - minVal) / (maxVal - minVal)) * chartW;
-            const badgeX = Math.max(padL + 12, Math.min(padL + chartW - 12, thX));
 
             const threshLine = `
                 <line x1="${thX.toFixed(1)}" y1="${padT - 3}" x2="${thX.toFixed(1)}" y2="${padT + chartH}" stroke="#ef4444" stroke-width="1.8" stroke-dasharray="3,2" />
@@ -2351,37 +2354,33 @@
             const privSlotW = privChartW / numDiffBins;
             const privBarW = Math.max(3, privSlotW - 1.5);
 
+            const xMinusDelta = privPadL + ((-delta - minDiff) / (maxDiff - minDiff)) * privChartW;
+            const xPlusDelta = privPadL + ((delta - minDiff) / (maxDiff - minDiff)) * privChartW;
+
             let privBarsSvg = '';
             for (let i = 0; i < numDiffBins; i++) {
                 const b = diffBins[i];
                 if (b.total === 0) continue;
-                const x = privPadL + i * privSlotW + (privSlotW - privBarW) / 2;
+                const xStart = privPadL + i * privSlotW + (privSlotW - privBarW) / 2;
+                const xEnd = xStart + privBarW;
                 const totalH = (b.total / maxDiffCount) * privChartH;
-                const hS = (b.countS / maxDiffCount) * privChartH;
-                const hN = (b.countN / maxDiffCount) * privChartH;
-                const hH = (b.countH / maxDiffCount) * privChartH;
                 const yTop = privPadT + (privChartH - totalH);
 
-                let currY = yTop + totalH;
-                if (b.countS > 0) {
-                    currY -= hS;
-                    privBarsSvg += `<rect x="${x.toFixed(1)}" y="${currY.toFixed(1)}" width="${privBarW.toFixed(1)}" height="${hS.toFixed(1)}" rx="1" fill="#f43f5e" opacity="0.88">
-                        <title>Diff ${b.center}: Sadness (${b.countS})</title></rect>`;
-                }
-                if (b.countN > 0) {
-                    currY -= hN;
-                    privBarsSvg += `<rect x="${x.toFixed(1)}" y="${currY.toFixed(1)}" width="${privBarW.toFixed(1)}" height="${hN.toFixed(1)}" rx="1" fill="#64748b" opacity="0.88">
-                        <title>Diff ${b.center}: Neutral (${b.countN})</title></rect>`;
-                }
-                if (b.countH > 0) {
-                    currY -= hH;
-                    privBarsSvg += `<rect x="${x.toFixed(1)}" y="${currY.toFixed(1)}" width="${privBarW.toFixed(1)}" height="${hH.toFixed(1)}" rx="1" fill="#10b981" opacity="0.88">
-                        <title>Diff ${b.center}: Happiness (${b.countH})</title></rect>`;
+                if (xEnd <= xMinusDelta) {
+                    privBarsSvg += `<rect x="${xStart.toFixed(1)}" y="${yTop.toFixed(1)}" width="${privBarW.toFixed(1)}" height="${totalH.toFixed(1)}" rx="1.5" fill="#f43f5e" opacity="0.88">
+                        <title>Diff ${b.center}: ${b.total} items (Sadness)</title></rect>`;
+                } else if (xStart >= xPlusDelta) {
+                    privBarsSvg += `<rect x="${xStart.toFixed(1)}" y="${yTop.toFixed(1)}" width="${privBarW.toFixed(1)}" height="${totalH.toFixed(1)}" rx="1.5" fill="#10b981" opacity="0.88">
+                        <title>Diff ${b.center}: ${b.total} items (Happiness)</title></rect>`;
+                } else if (xStart >= xMinusDelta && xEnd <= xPlusDelta) {
+                    privBarsSvg += `<rect x="${xStart.toFixed(1)}" y="${yTop.toFixed(1)}" width="${privBarW.toFixed(1)}" height="${totalH.toFixed(1)}" rx="1.5" fill="#64748b" opacity="0.88">
+                        <title>Diff ${b.center}: ${b.total} items (Neutral)</title></rect>`;
+                } else {
+                    const fillColor = (b.center > delta) ? '#10b981' : ((b.center < -delta) ? '#f43f5e' : '#64748b');
+                    privBarsSvg += `<rect x="${xStart.toFixed(1)}" y="${yTop.toFixed(1)}" width="${privBarW.toFixed(1)}" height="${totalH.toFixed(1)}" rx="1.5" fill="${fillColor}" opacity="0.88">
+                        <title>Diff ${b.center}: ${b.total} items</title></rect>`;
                 }
             }
-
-            const xMinusDelta = privPadL + ((-delta - minDiff) / (maxDiff - minDiff)) * privChartW;
-            const xPlusDelta = privPadL + ((delta - minDiff) / (maxDiff - minDiff)) * privChartW;
 
             const deltaLines = `
                 <line x1="${xMinusDelta.toFixed(1)}" y1="${privPadT - 3}" x2="${xMinusDelta.toFixed(1)}" y2="${privPadT + privChartH}" stroke="#ef4444" stroke-width="1.6" stroke-dasharray="3,2" />
